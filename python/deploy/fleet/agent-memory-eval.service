@@ -5,7 +5,6 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=ubuntu
-WorkingDirectory=/home/ubuntu/cursor-dreaming-memory
-EnvironmentFile=/home/ubuntu/.config/agent-memory/.env
-ExecStart=/home/ubuntu/.local/bin/uv run python deploy/oci/prefect_flow.py
+WorkingDirectory=%h/cursor-dreaming-memory
+EnvironmentFile=%h/.agent-memory.env
+ExecStart=%h/.local/bin/uv run python deploy/oci/prefect_flow.py
