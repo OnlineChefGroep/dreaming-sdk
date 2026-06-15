@@ -134,6 +134,79 @@ class LinearClient:
             raise RuntimeError("Failed to update issue status")
         return result["issue"]
 
+    def list_issues(
+        self,
+        state: str | None = None,
+        *,
+        limit: int = 50,
+        team_key: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """List issues for a team, optionally filtered by workflow state name."""
+        filt: dict[str, Any] = {"team": {"key": {"eq": (team_key or self.team_key)}}}
+        if state:
+            filt["state"] = {"name": {"eq": state}}
+        data = self.gql(
+            """
+            query Issues($filter: IssueFilter, $first: Int) {
+              issues(filter: $filter, first: $first, orderBy: updatedAt) {
+                nodes {
+                  id identifier title description priority url
+                  state { name type }
+                  labels { nodes { id name } }
+                  updatedAt
+                }
+              }
+            }
+            """,
+            {"filter": filt, "first": limit},
+        )
+        return data.get("issues", {}).get("nodes", [])
+
+    def team_labels(self, team_key: str | None = None) -> dict[str, str]:
+        """Return {label_name_lower: label_id} for the team."""
+        team_id = self._resolve_team_id(team_key or self.team_key)
+        data = self.gql(
+            """
+            query Labels($teamId: ID!) {
+              issueLabels(filter: { team: { id: { eq: $teamId } } }, first: 250) {
+                nodes { id name }
+              }
+            }
+            """,
+            {"teamId": team_id},
+        )
+        return {n["name"].lower(): n["id"] for n in data.get("issueLabels", {}).get("nodes", [])}
+
+    def update_issue(
+        self,
+        issue_id: str,
+        *,
+        priority: int | None = None,
+        label_ids: list[str] | None = None,
+    ) -> dict[str, Any]:
+        issue = self.get_issue(issue_id)
+        inp: dict[str, Any] = {}
+        if priority is not None:
+            inp["priority"] = priority
+        if label_ids is not None:
+            inp["labelIds"] = label_ids
+        if not inp:
+            return issue
+        data = self.gql(
+            """
+            mutation UpdateIssue($id: String!, $input: IssueUpdateInput!) {
+              issueUpdate(id: $id, input: $input) {
+                success issue { identifier url priority }
+              }
+            }
+            """,
+            {"id": issue["id"], "input": inp},
+        )
+        result = data.get("issueUpdate", {})
+        if not result.get("success"):
+            raise RuntimeError("Failed to update issue")
+        return result["issue"]
+
     def _resolve_team_id(self, team_key: str) -> str:
         cached = os.environ.get("LINEAR_TEAM_ID", "")
         if cached:

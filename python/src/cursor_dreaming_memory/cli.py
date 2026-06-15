@@ -37,6 +37,19 @@ def main() -> None:
     sub.add_parser("init", help="Apply Postgres schema")
     sub.add_parser("doctor", help="Show config presence + DB connectivity")
 
+    p_metrics = sub.add_parser("metrics", help="Print aggregated metrics as JSON")
+    p_metrics.add_argument("--days", type=int, default=14)
+
+    p_triage = sub.add_parser("triage", help="Auto-triage untriaged Linear issues")
+    p_triage.add_argument("--state", default=None, help="Filter by workflow state name")
+    p_triage.add_argument("--limit", type=int, default=50)
+    p_triage.add_argument("--apply", action="store_true", help="Write priority/labels to Linear")
+    p_triage.add_argument("--comment", action="store_true", help="Post rationale comment")
+
+    p_serve = sub.add_parser("serve", help="Run the metrics dashboard")
+    p_serve.add_argument("--host", default="0.0.0.0")
+    p_serve.add_argument("--port", type=int, default=8787)
+
     p_remember = sub.add_parser("remember", help="Write a memory record")
     p_remember.add_argument("--agent", default="default")
     p_remember.add_argument("--session-id", required=True)
@@ -67,6 +80,29 @@ def main() -> None:
 
     if args.command == "doctor":
         _doctor()
+        return
+
+    if args.command == "metrics":
+        from cursor_dreaming_memory.store.postgres import AgentMemoryStore
+
+        print(json.dumps(AgentMemoryStore().metrics(days=args.days), indent=2, default=str))
+        return
+
+    if args.command == "serve":
+        from cursor_dreaming_memory.dashboard import serve
+
+        serve(host=args.host, port=args.port)
+        return
+
+    if args.command == "triage":
+        from cursor_dreaming_memory.triage import AutoTriage
+
+        results = AutoTriage().run(
+            state=args.state, limit=args.limit, apply=args.apply, comment=args.comment
+        )
+        for r in results:
+            print(json.dumps(r.to_content(), default=str))
+        print(f"# triaged {len(results)} issue(s); apply={args.apply}")
         return
 
     memory = AgentMemory()

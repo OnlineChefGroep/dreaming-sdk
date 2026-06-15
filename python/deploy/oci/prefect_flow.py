@@ -36,19 +36,38 @@ def sync_linear_issues() -> int:
     return count
 
 
+def run_auto_triage() -> int:
+    """Auto-triage untriaged Linear issues. Set TRIAGE_APPLY=1 to write back."""
+    from cursor_dreaming_memory.triage import AutoTriage
+
+    apply = os.environ.get("TRIAGE_APPLY", "0") == "1"
+    state = os.environ.get("TRIAGE_STATE") or None
+    results = AutoTriage().run(state=state, limit=100, apply=apply, comment=apply)
+    return len(results)
+
+
 def main() -> None:
     try:
-        from prefect import flow
+        from prefect import flow, task
 
-        @flow(name="agent-memory-linear-sync")
-        def linear_sync_flow() -> int:
+        @task
+        def _sync() -> int:
             return sync_linear_issues()
 
-        linear_sync_flow()
+        @task
+        def _triage() -> int:
+            return run_auto_triage()
+
+        @flow(name="agent-memory-sync-triage")
+        def memory_flow() -> None:
+            print(f"Synced {_sync()} issues")
+            print(f"Triaged {_triage()} issues")
+
+        memory_flow()
     except ImportError:
         # Run without Prefect if extra not installed
-        n = sync_linear_issues()
-        print(f"Synced {n} issues")
+        print(f"Synced {sync_linear_issues()} issues")
+        print(f"Triaged {run_auto_triage()} issues")
 
 
 if __name__ == "__main__":

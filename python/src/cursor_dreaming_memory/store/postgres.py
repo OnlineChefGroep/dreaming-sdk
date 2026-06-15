@@ -120,6 +120,81 @@ class AgentMemoryStore:
             ).fetchall()
         return [self._row_to_record(r) for r in rows]
 
+    def metrics(self, days: int = 14) -> dict[str, Any]:
+        """Aggregate counts for the metrics dashboard (single round-trip-ish)."""
+        with self._conn() as conn:
+            total = conn.execute("SELECT count(*) AS n FROM agent_memory").fetchone()["n"]
+
+            def group(col: str) -> list[dict[str, Any]]:
+                rows = conn.execute(
+                    f"SELECT {col} AS key, count(*) AS n FROM agent_memory "
+                    f"GROUP BY {col} ORDER BY n DESC"
+                ).fetchall()
+                return [{"key": r["key"], "count": r["n"]} for r in rows]
+
+            by_source = group("source")
+            by_type = group("memory_type")
+            by_session_type = group("session_type")
+            by_agent = conn.execute(
+                "SELECT agent_id AS key, count(*) AS n FROM agent_memory "
+                "GROUP BY agent_id ORDER BY n DESC LIMIT 10"
+            ).fetchall()
+            per_day = conn.execute(
+                """
+                SELECT to_char(date_trunc('day', created_at), 'YYYY-MM-DD') AS day,
+                       count(*) AS n
+                FROM agent_memory
+                WHERE created_at >= now() - make_interval(days => %s)
+                GROUP BY 1 ORDER BY 1
+                """,
+                (days,),
+            ).fetchall()
+            recent = conn.execute(
+                """
+                SELECT id, agent_id, session_id, session_type, memory_type, source,
+                       created_at, content
+                FROM agent_memory ORDER BY created_at DESC LIMIT 15
+                """
+            ).fetchall()
+            triage_total = conn.execute(
+                "SELECT count(*) AS n FROM agent_memory "
+                "WHERE memory_type = 'decision' AND metadata ? 'triage'"
+            ).fetchone()["n"]
+            last_activity = conn.execute(
+                "SELECT max(created_at) AS ts FROM agent_memory"
+            ).fetchone()["ts"]
+
+        def _preview(c: Any) -> str:
+            if isinstance(c, dict):
+                for k in ("identifier", "title", "note", "event", "body", "host"):
+                    if k in c:
+                        return str(c[k])[:80]
+            return str(c)[:80]
+
+        return {
+            "total": total,
+            "last_activity": last_activity.isoformat() if last_activity else None,
+            "by_source": by_source,
+            "by_memory_type": by_type,
+            "by_session_type": by_session_type,
+            "by_agent": [{"key": r["key"], "count": r["n"]} for r in by_agent],
+            "per_day": [{"day": r["day"], "count": r["n"]} for r in per_day],
+            "triage_decisions": triage_total,
+            "recent": [
+                {
+                    "id": str(r["id"]),
+                    "agent_id": r["agent_id"],
+                    "session_id": r["session_id"],
+                    "session_type": r["session_type"],
+                    "memory_type": r["memory_type"],
+                    "source": r["source"],
+                    "created_at": r["created_at"].isoformat(),
+                    "preview": _preview(r["content"]),
+                }
+                for r in recent
+            ],
+        }
+
     def update_content(self, memory_id: UUID, content: dict[str, Any]) -> MemoryRecord | None:
         with self._conn() as conn:
             row = conn.execute(
