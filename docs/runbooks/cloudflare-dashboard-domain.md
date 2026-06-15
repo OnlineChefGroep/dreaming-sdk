@@ -6,10 +6,30 @@ also reachable over Tailscale). It is published to the internet through a
 
 ## Live
 
-- URL: <https://memory.chefgroep.nl>
+- Direct: <https://memory.chefgroep.online>
+- Via online control-plane API: <https://api.chefgroep.online/dashboard>
 - Origin: `cloudflared` connector on `bc-monitor` → `http://localhost:8787`
 - Tunnel: `agent-memory` (cloudflare-managed config) in account `3658edc5…`
 - Connector service: `systemctl status cloudflared` on `bc-monitor`
+
+### Hooked into the .online API
+
+`api.chefgroep.online` is the `utrecht-dataos-api` Worker (custom domain). It now
+reverse-proxies `/dashboard`, `/api/metrics` and `/healthz` to the dashboard
+origin and advertises `dashboard` in its root JSON. Source lives at
+`python/deploy/cloudflare/utrecht-dataos-api.worker.js`. Redeploy with:
+
+```bash
+T=$CLOUDFLARE_API_TOKEN A=$CLOUDFLARE_ACCOUNT_ID
+echo '{"body_part":"script","compatibility_date":"2025-01-01","keep_bindings":["secret_text","plain_text"]}' > /tmp/meta.json
+curl -X PUT "https://api.cloudflare.com/client/v4/accounts/$A/workers/scripts/utrecht-dataos-api" \
+  -H "Authorization: Bearer $T" \
+  -F "metadata=@/tmp/meta.json;type=application/json" \
+  -F "script=@python/deploy/cloudflare/utrecht-dataos-api.worker.js;type=application/javascript"
+```
+
+`keep_bindings` preserves the `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`
+bindings so they survive the redeploy.
 
 ## How it was wired
 
