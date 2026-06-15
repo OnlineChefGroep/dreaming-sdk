@@ -6,9 +6,9 @@ also reachable over Tailscale). It is published to the internet through a
 
 ## Live
 
-- URL: <https://memory.blackclaw.xyz>
+- URL: <https://memory.chefgroep.nl>
 - Origin: `cloudflared` connector on `bc-monitor` → `http://localhost:8787`
-- Tunnel: `agent-memory` (cloudflare-managed config)
+- Tunnel: `agent-memory` (cloudflare-managed config) in account `3658edc5…`
 - Connector service: `systemctl status cloudflared` on `bc-monitor`
 
 ## How it was wired
@@ -35,23 +35,15 @@ python deploy/fleet/cloudflare_tunnel.py        # prints url; TUNNEL_TOKEN to st
 sudo cloudflared service install <TUNNEL_TOKEN>
 ```
 
-## Moving to `memory.chefgroep.nl`
-
-`chefgroep.nl` / `chefgroep.online` live in Cloudflare account
-`3658edc5d94b8eb1fb06790e4b712877`. The fleet currently only holds a *scoped*
-API token there (no Zone/Tunnel rights) plus tunnel-connector credentials, so a
-new hostname cannot be created from the fleet yet. To switch:
-
-1. Provide an API token on that account with `Cloudflare Tunnel:Edit`,
-   `DNS:Edit`, `Zone:Read`, **or** add a Public Hostname to an existing tunnel
-   in Zero Trust → Networks → Tunnels and hand over that tunnel token.
-2. Re-run the steps above with `TUNNEL_HOSTNAME=memory.chefgroep.nl`.
-
 ## Notes / hardening
 
+- The account token (`CLOUDFLARE_API_TOKEN`, account `3658edc5…`) with
+  `Cloudflare Tunnel:Edit` + `DNS:Edit` + `Zone:Read`, plus the R2 keys
+  (`R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_ENDPOINT`), live in
+  `~/.openclaude/.env` and are synced to the fleet by `sync-env.sh`.
 - The dashboard shows aggregate memory counts only (no secrets), but to lock it
   behind login add a **Cloudflare Access** self-hosted app policy on the
   hostname (Zero Trust → Access → Applications).
-- `blackclaw.xyz` has a catch-all dynamic redirect to `chefgroep.nl`; the rule
-  expression excludes `http.host eq "memory.blackclaw.xyz"` so the dashboard is
-  reachable while every other host keeps redirecting.
+- The original temporary deployment on `memory.blackclaw.xyz` (a different
+  account, reached via the global key) has been torn down: tunnel + DNS removed
+  and that zone's catch-all redirect to `chefgroep.nl` restored to `true`.
