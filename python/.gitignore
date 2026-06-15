@@ -5,9 +5,8 @@ __pycache__/
 .env.*
 !.env.example
 data/lancedb/
-*.egg-info/
+.pytest_cache/
 dist/
 build/
-.pytest_cache/
-.ruff_cache/
+*.egg-info/
 uv.lock

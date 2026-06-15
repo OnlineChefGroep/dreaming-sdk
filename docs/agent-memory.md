@@ -91,15 +91,32 @@ memory.index_semantic(record, "searchable text", vector=[...])
 hits = memory.search_semantic(query_vector)
 ```
 
-## OCI deployment (Ampere A1)
+## Deployment status (live)
 
-See [python/deploy/oci/README.md](../python/deploy/oci/README.md).
+Postgres SSOT runs in Docker on the Ampere A1 node `bc-scan-arm`, reachable over
+Tailscale at `100.68.121.19:5432` (db `agent_memory`, user `agentmem`). Bound to
+localhost + Tailscale only — no public exposure.
 
-Summary:
+| Concern | Where |
+|---------|-------|
+| OCI provisioning / compose | [python/deploy/oci/README.md](../python/deploy/oci/README.md) |
+| Fleet env + CLI wiring | [python/deploy/fleet/README.md](../python/deploy/fleet/README.md) |
+| Ops (backup, rotate, troubleshoot) | [runbooks/memory-ops.md](./runbooks/memory-ops.md) |
+| Eval & sync scheduling | [runbooks/eval-scheduling.md](./runbooks/eval-scheduling.md) |
+| Agent CLI usage contract | [skills-bundle/shared/agent-memory.md](../skills-bundle/shared/agent-memory.md) |
 
-1. Provision Ampere A1 via OCI CLI (`~/.oci/config` already configured)
-2. `docker compose up -d` for Postgres on the instance
-3. Deploy Python package + optional Prefect flow for scheduled Linear sync
+Secrets resolve from `~/.openclaude/.env` (sofie) and `~/.agent-memory.env` (nodes)
+via `FleetConfig.load()` / `load_fleet_secrets()`.
+
+## Integrations status
+
+| Integration | Status |
+|-------------|--------|
+| Postgres SSOT | live on bc-scan-arm |
+| Linear (team `CHEF`) | connected |
+| Notion | token valid; share pages with the integration to ingest |
+| Cloudflare R2 (semantic) | wired, optional — set `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` |
+| Sentry | wired, optional — set `SENTRY_DSN` |
 
 ## Dashboard readiness
 
