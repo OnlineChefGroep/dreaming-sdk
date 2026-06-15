@@ -111,10 +111,16 @@ cursor-dreaming-sdk/
 ├── docs/
 │   ├── README.md             ← system overview + architecture diagram
 │   ├── architecture.md
+│   ├── agent-memory.md       ← CHEF-308 memory layer
 │   ├── sdk-integration.md
 │   ├── multi-agent.md
 │   ├── eval-quality.md
 │   └── operations.md
+├── python/                   ← agent memory extension (Postgres + Linear/Notion)
+│   ├── src/cursor_dreaming_memory/
+│   ├── examples/
+│   ├── deploy/oci/
+│   └── tests/
 ├── automations/
 │   ├── dream_eval_weekly.json
 │   └── dream_nightly_dryrun.json
@@ -132,6 +138,7 @@ cursor-dreaming-sdk/
 | Phase | Deliverable |
 |-------|-------------|
 | 0 | Docs + automation JSON + skills bundle (this repo) |
+| 0.5 | **Agent memory** (`python/`) — Postgres SSOT, Linear/Notion, optional LanceDB — [docs/agent-memory.md](./docs/agent-memory.md) |
 | 1 | npm `@onlinechefgroep/dream-cli` (CLI + schema validation) |
 | 2 | GitHub Actions weekly run + Slack/Notion post |
 | 3 | Webhook API (`POST /v1/dream/eval`) + optional MCP |

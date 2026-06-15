@@ -1,0 +1,11 @@
+[Unit]
+Description=Dream eval + Linear memory sync (oneshot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/cursor-dreaming-memory
+EnvironmentFile=/home/ubuntu/.config/agent-memory/.env
+ExecStart=/home/ubuntu/.local/bin/uv run python deploy/oci/prefect_flow.py

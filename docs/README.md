@@ -163,6 +163,7 @@ Open Automations and prefill from `automations/dream_eval_weekly.json` in [curso
 | Doc | Contents |
 |-----|----------|
 | [architecture.md](./architecture.md) | Soul, index, decisions log, schemas, hash rules |
+| [agent-memory.md](./agent-memory.md) | CHEF-308 Postgres memory layer, Linear/Notion, OCI |
 | [sdk-integration.md](./sdk-integration.md) | Cursor SDK, npm phases, HTTP/webhook, CI |
 | [multi-agent.md](./multi-agent.md) | Claude, Codex, OpenCode, Grok consumption |
 | [eval-quality.md](./eval-quality.md) | Golden corpus, metrics, judge faithfulness, known weaknesses |
@@ -180,7 +181,7 @@ dreaming plugin (local install)
         │
         ▼ documents + thin wrappers
 cursor-dreaming-sdk (GitHub)
-  docs/ · skills-bundle/ · automations/ · LICENSE
+  docs/ · skills-bundle/ · automations/ · python/ · LICENSE
         │
         ▼ optional future
 @onlinechefgroep/dream-cli (npm, Phase 1)
