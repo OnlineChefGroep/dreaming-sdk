@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+data/lancedb/
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+uv.lock
