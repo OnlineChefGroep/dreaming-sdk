@@ -1,0 +1,28 @@
+{
+  "name": "Dream Eval — Weekly Quality Gate",
+  "description": "Runs the dream evaluation pipeline: deterministic tests, golden corpus eval, faithfulness scoring, and metrics tracking.",
+  "workflow": {
+    "triggers": [
+      {
+        "cron": {
+          "cron": "0 9 * * 1"
+        }
+      }
+    ],
+    "actions": [],
+    "prompts": [
+      {
+        "content": "Apply the dream-eval-loop skill to run one evaluation pass of the dreaming plugin.\n\nSteps:\n1. cd to ~/.cursor/plugins/local/dreaming\n2. Run `node cli/dream.mjs test --json` — if hard_fail is true, STOP and report the failure prominently.\n3. In an isolated eval workspace, run dream-evaluator (readonly) over eval/golden-corpus with the pinned eval/soul-snapshot.md.\n4. Run dream-judge (readonly, must NOT read soul.md) — score faithfulness + precision/recall against eval/golden-corpus/labels.json.\n5. Run `node cli/dream.mjs decisions --json` for acceptance/regret rates.\n6. Write eval/results/<run_id>/metrics.json (canonical metric names) and eval/results/<run_id>/summary.md.\n\nDo NOT apply any memory or mutate ~/.cursor/AGENTS.md. Evaluation only.\n\nPost the summary to chat. Flag hard failures (secret-leak, hash-determinism) prominently at the top."
+      }
+    ],
+    "model": "",
+    "agentOptions": {
+      "skipInstall": false
+    },
+    "memoryEnabled": true,
+    "gitConfig": {
+      "repo": "",
+      "branch": ""
+    }
+  }
+}

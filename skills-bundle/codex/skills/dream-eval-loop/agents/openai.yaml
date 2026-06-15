@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dream Eval Loop"
+  short_description: "Unattended dream evaluation pipeline (golden corpus, faithfulness gate)"
+  default_prompt: "Use $dream-eval-loop to run one golden corpus eval pass and write metrics.json + summary.md under eval/results/<run_id>/."
+policy:
+  allow_implicit_invocation: false

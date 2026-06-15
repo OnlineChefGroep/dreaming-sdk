@@ -1,0 +1,28 @@
+{
+  "name": "Dream — Nightly Dry Run",
+  "description": "Checks for new transcripts and runs a dry-run dream evaluation if enough have accumulated.",
+  "workflow": {
+    "triggers": [
+      {
+        "cron": {
+          "cron": "0 0 * * *"
+        }
+      }
+    ],
+    "actions": [],
+    "prompts": [
+      {
+        "content": "Check pending dream session count and run a dry-run evaluation if enough have accumulated.\n\nSteps:\n1. cd to ~/.cursor/plugins/local/dreaming\n2. Run `node cli/dream.mjs status --json` and read the `pending` count.\n3. If pending < 5, respond with \"Skipped: only <N> pending sessions (threshold: 5)\" and stop.\n4. If pending >= 5, apply the dreaming skill in dry-run mode:\n   a. Run `node cli/dream.mjs scope --json` to list in-scope sessions.\n   b. Launch dream-evaluator (readonly) over the pending transcripts with the active soul.\n   c. Write the report to ~/.cursor/dreaming/dreams/<timestamp>.md.\n   d. Do NOT apply anything, do NOT update the index (dry-run stops after the report).\n5. Post the report highlights to chat: proposed AGENTS.md diff, skill/subagent/rule candidates, stale sessions, and the Dreamer's Notes section.\n\nDo NOT apply any memory or mutate ~/.cursor/AGENTS.md or the dream index. Dry-run only."
+      }
+    ],
+    "model": "",
+    "agentOptions": {
+      "skipInstall": false
+    },
+    "memoryEnabled": true,
+    "gitConfig": {
+      "repo": "",
+      "branch": ""
+    }
+  }
+}
