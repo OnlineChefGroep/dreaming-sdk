@@ -7,11 +7,18 @@
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { existsSync } from 'node:fs';
 
 const PLUGIN_ROOT = process.env.DREAM_PLUGIN_ROOT || join(homedir(), '.cursor', 'plugins', 'local', 'dreaming');
 const CLOUD_RUNNER = join(PLUGIN_ROOT, 'sdk', 'run-dream-cloud.ts');
 
 async function main() {
+  if (!existsSync(PLUGIN_ROOT)) {
+    console.error(`Error: Dreaming plugin not found at ${PLUGIN_ROOT}`);
+    console.error(`Please install the plugin or set DREAM_PLUGIN_ROOT environment variable.`);
+    process.exit(1);
+  }
+
   console.log(`Starting dream-eval cloud run via plugin at ${PLUGIN_ROOT}...`);
 
   const args = process.argv.slice(2);
