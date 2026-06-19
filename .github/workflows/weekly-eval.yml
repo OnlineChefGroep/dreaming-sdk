@@ -1,0 +1,52 @@
+name: Weekly Dream Eval
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Mondays at 09:00 UTC
+  workflow_dispatch:       # allow manual trigger
+
+jobs:
+  dream-eval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'  # native --experimental-strip-types for TS
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Validate SDK syntax
+        run: |
+          node --check bin/dream.js
+          test -f sdk/run-dream-cloud.ts
+
+      - name: Install Python deps
+        run: cd python && uv sync --extra dev
+
+      - name: Run Python checks
+        run: |
+          cd python
+          uv run ruff check .
+          uv run pytest -q
+
+      - name: Run dream eval (cloud, if plugin available)
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          if [ -d "$HOME/.cursor/plugins/local/dreaming" ]; then
+            node --experimental-strip-types sdk/run-dream-cloud.ts --cloud
+          else
+            echo "::notice::dreaming plugin not present in CI; skipping cloud eval (validation steps above already ran)"
+          fi

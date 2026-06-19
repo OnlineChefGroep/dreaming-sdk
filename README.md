@@ -135,13 +135,17 @@ cursor-dreaming-sdk/
 
 ## Phases
 
-| Phase | Deliverable |
-|-------|-------------|
-| 0 | Docs + automation JSON + skills bundle (this repo) |
-| 0.5 | **Agent memory** (`python/`) — Postgres SSOT, Linear/Notion, optional LanceDB — [docs/agent-memory.md](./docs/agent-memory.md) |
-| 1 | npm `@onlinechefgroep/dream-cli` (CLI + schema validation) |
-| 2 | GitHub Actions weekly run + Slack/Notion post |
-| 3 | Webhook API (`POST /v1/dream/eval`) + optional MCP |
+| Phase | Deliverable | Status |
+|-------|-------------|--------|
+| 0 | Docs + automation JSON + skills bundle (this repo) | ✅ Done |
+| 0.5 | **Agent memory** (`python/`) — Postgres SSOT, Linear/Notion, optional LanceDB — [docs/agent-memory.md](./docs/agent-memory.md) | ✅ Done |
+| 1 | **npm `@onlinechefgroep/dream-cli`** — unified CLI + schema validation | 🚧 In progress |
+| 2 | **GitHub Actions** — weekly golden evaluation + Slack/Notion reporting | 🚧 In progress |
+| 3 | **Webhook API** — `POST /v1/dream/eval` + orchestration via MCP | 📅 Planned |
+| 4 | **Soul Evolution** — automatic `soul.md` refinement based on acceptance rates | 📅 Planned |
+| 5 | **Fleet Orchestration** — centralized dream-eval across multiple agent nodes | 📅 Planned |
+
+> CI runs lint + tests on every push/PR (workflow [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)); the weekly golden eval runs via [`.github/workflows/weekly-eval.yml`](./.github/workflows/weekly-eval.yml).
 
 ---
 
