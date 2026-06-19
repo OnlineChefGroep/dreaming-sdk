@@ -1,0 +1,38 @@
+name: Weekly Dream Eval
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Mondays at 09:00 UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Required for --experimental-strip-types
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install Python dependencies
+        run: |
+          cd python
+          uv sync --dev
+
+      - name: Run weekly eval
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          echo "Running weekly dream evaluation loop..."
+          # The sdk/ directory contains the thin wrapper for the plugin's cloud runner.
+          # node --experimental-strip-types sdk/run-dream-cloud.ts --cloud

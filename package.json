@@ -1,0 +1,17 @@
+{
+  "name": "@onlinechefgroep/dream-cli",
+  "version": "0.1.0",
+  "description": "CLI for the Cursor dreaming plugin eval loop",
+  "main": "bin/dream.js",
+  "bin": {
+    "dream": "bin/dream.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "OnlineChefGroep",
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "^8.12.0"
+  }
+}
