@@ -25,24 +25,30 @@ if [[ ! -f "$PLUGIN_CLI" ]]; then
   echo "WARN: dreaming plugin not found at $PLUGIN_CLI" >&2
 fi
 
-install_one() {
-  local name="$1" src_rel="$2" dst
-  case "$name" in
+skill_base() {
+  # Print the destination skills directory for a platform.
+  case "$1" in
     cursor)
-      if [[ $GLOBAL -eq 1 ]]; then dst="${HOME}/.cursor/skills/dream-eval-loop"
-      else dst="${TARGET}/.cursor/skills/dream-eval-loop"; fi ;;
+      if [[ $GLOBAL -eq 1 ]]; then echo "${HOME}/.cursor/skills"; else echo "${TARGET}/.cursor/skills"; fi ;;
     claude)
-      if [[ $GLOBAL -eq 1 ]]; then dst="${HOME}/.claude/skills/dream-eval-loop"
-      else dst="${TARGET}/.claude/skills/dream-eval-loop"; fi ;;
-    codex)    dst="${TARGET}/.agents/skills/dream-eval-loop" ;;
-    opencode) dst="${TARGET}/.opencode/skills/dream-eval-loop" ;;
-    grok)     dst="${TARGET}/.factory/skills/dream-eval-loop" ;;
-    *) echo "Unknown platform: $name"; exit 2 ;;
+      if [[ $GLOBAL -eq 1 ]]; then echo "${HOME}/.claude/skills"; else echo "${TARGET}/.claude/skills"; fi ;;
+    codex)    echo "${TARGET}/.agents/skills" ;;
+    opencode) echo "${TARGET}/.opencode/skills" ;;
+    grok)     echo "${TARGET}/.factory/skills" ;;
+    *) echo "Unknown platform: $1" >&2; exit 2 ;;
   esac
-  local src="${BUNDLE_ROOT}/${src_rel}"
+}
+
+install_skill() {
+  local platform="$1" skill="$2"
+  local src="${BUNDLE_ROOT}/${platform}/skills/${skill}"
+  if [[ ! -d "$src" ]]; then
+    return 0  # this platform does not ship this skill
+  fi
+  local dst="$(skill_base "$platform")/${skill}"
   mkdir -p "$(dirname "$dst")"
   cp -R "$src" "$dst"
-  echo "Installed $name -> $dst"
+  echo "Installed ${platform}/${skill} -> $dst"
 }
 
 PLATFORMS=()
@@ -52,14 +58,12 @@ else
   PLATFORMS=("$PLATFORM")
 fi
 
+SKILLS=(dream-eval-loop dream-tui)
+
 for p in "${PLATFORMS[@]}"; do
-  case "$p" in
-    cursor)   install_one cursor   "cursor/skills/dream-eval-loop" ;;
-    claude)   install_one claude   "claude/skills/dream-eval-loop" ;;
-    codex)    install_one codex    "codex/skills/dream-eval-loop" ;;
-    opencode) install_one opencode "opencode/skills/dream-eval-loop" ;;
-    grok)     install_one grok     "grok/skills/dream-eval-loop" ;;
-  esac
+  for s in "${SKILLS[@]}"; do
+    install_skill "$p" "$s"
+  done
 done
 
 SHARED_DST="${TARGET}/docs/ops/dreaming/skills-bundle/shared"

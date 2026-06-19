@@ -1,0 +1,14 @@
+interface:
+  display_name: "Dream Navigator"
+  short_description: "Operate the dream CLI (human TUI + agent JSON protocol) for the dreaming plugin"
+  default_prompt: "Use $dream-tui: run `dream agent --json` to discover plugin readiness, then drive `dream run --json` (preview with --dry-run first). Report ok, plugin_root, per-step exit codes, and next actions. Never parse the rendered TUI; read JSON only."
+policy:
+  allow_implicit_invocation: false
+agent:
+  name: dream-navigator
+  mode: subagent
+  access: readonly-soul
+  boundaries:
+    - "Never read or mutate soul.md or live ~/.cursor/dreaming/ state."
+    - "Eval output is confined to eval/results/<run_id>/."
+    - "Propagate non-zero exit codes and hard_fail as stop conditions."

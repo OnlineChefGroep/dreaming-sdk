@@ -67,8 +67,9 @@ assert.equal(parseArgs(["doctor", "--json"]).command, "doctor");
 assert.equal(parseArgs(["--version"]).command, "version");
 assert.equal(parseArgs(["run", "--dry-run", "--json"]).dryRun, true);
 assert.equal(typeof supportsStripTypes(), "boolean");
-assert.equal(decodeKey("j"), "j");
+assert.equal(decodeKey("j"), "down");
 assert.equal(decodeKey("\u001b[A"), "up");
+assert.equal(decodeKey("/"), "palette");
 assert.equal(nextTuiIndex(0, "up", 3), 2);
 assert.equal(nextTuiIndex(2, "down", 3), 0);
 

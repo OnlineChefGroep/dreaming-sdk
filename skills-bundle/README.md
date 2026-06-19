@@ -2,6 +2,16 @@
 
 Portable skill scaffold for the dream-eval / dreaming pipeline across **Cursor**, **Claude**, **Codex**, **OpenCode**, and **Grok (Factory)**.
 
+**Skills in this bundle:**
+
+- `dream-eval-loop` — unattended golden-corpus eval orchestrator.
+- `dream-tui` — interactive terminal control surface (human TUI + agent JSON
+  protocol) with the `dream-navigator` special agent. UX contract:
+  [shared/tui-ux.md](./shared/tui-ux.md).
+
+The installers copy every skill a platform ships; `dream-tui` is available for
+Cursor and Codex.
+
 **Prerequisite:** Dreaming plugin at `~/.cursor/plugins/local/dreaming/` (CLI, golden corpus, schemas). This bundle is orchestration markdown only.
 
 **SSOT docs:** [../README.md](../README.md) · [../multi-agent.md](../multi-agent.md) · [../sdk-integration.md](../sdk-integration.md)
