@@ -34,6 +34,12 @@ uv sync --extra dev
 
 This installs the runtime dependencies plus the `dev` extra (pytest, ruff).
 
+You can also use the repository-level helper:
+
+```bash
+make setup
+```
+
 ### Running tests
 
 ```bash
@@ -50,6 +56,12 @@ uv run ruff check .
 
 Both must pass before a change is ready for review. CI runs the same commands
 (see [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)).
+
+For the full local quality gate (Python, Node, package checks, workflow YAML parse):
+
+```bash
+make check
+```
 
 ## Branch naming
 

@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (Linear + Notion).
 - Python unit tests covering the Slack integration and Markdown export rendering.
 - `docs/agentic-loop-spec.md` describing the autonomous hardening run.
+- Contributor ergonomics: `Makefile`, `.editorconfig`, and `docs/quickstart.md`.
+- Maintainer and release documentation: `docs/maintainer-guide.md`,
+  `docs/release-process.md`, and `docs/oss-readiness.md`.
+- Supply-chain/security automation: Dependabot, CodeQL, Dependency Review, and release
+  artifact build workflows.
 
 ### Changed
 
@@ -27,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   state, with a richer README "Phases" table including status.
 - `weekly-eval` workflow now performs real, fail-loud validation (Node syntax check,
   Python lint + tests) instead of printing a fake "simulation passed" message.
+- CI now builds the Python package and validates the TypeScript cloud-runner wrapper.
+- Python package metadata now includes public project URLs, keywords, and trove
+  classifiers.
 
 ### Fixed
 

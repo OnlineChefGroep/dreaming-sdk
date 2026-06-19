@@ -6,8 +6,10 @@
     "dream": "bin/dream.js"
   },
   "scripts": {
+    "ci": "npm run lint && npm test",
     "test": "node --check bin/dream.js",
-    "lint": "node --check bin/dream.js"
+    "lint": "node --check bin/dream.js",
+    "release:dry-run": "npm pack --dry-run"
   },
   "repository": {
     "type": "git",

@@ -36,8 +36,11 @@ jobs:
       - name: Test (pytest)
         run: cd python && uv run pytest -q
 
+      - name: Build Python package
+        run: cd python && uv build
+
   node:
-    name: Node CLI (syntax check)
+    name: Node CLI (syntax + package checks)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -51,5 +54,8 @@ jobs:
       - name: Check CLI entrypoint syntax
         run: node --check bin/dream.js
 
-      - name: Ensure SDK cloud runner is present
-        run: test -f sdk/run-dream-cloud.ts
+      - name: Check SDK TypeScript wrapper syntax
+        run: node --experimental-strip-types --check sdk/run-dream-cloud.ts
+
+      - name: Run npm checks
+        run: npm run ci

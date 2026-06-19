@@ -1,5 +1,10 @@
 # cursor-dreaming-sdk
 
+[![CI](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/codeql.yml/badge.svg)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/codeql.yml)
+[![Weekly Dream Eval](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/weekly-eval.yml/badge.svg)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/weekly-eval.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 **Integration kit for the Cursor dreaming plugin eval loop.**
 
 Exportable orchestration patterns, automation templates, multi-agent skill bundles, and documentation so Cursor IDE, `@cursor/sdk`, OpenCode/Codex, Claude, Grok/Factory, and CI/webhook consumers can run the same dream-eval pipeline without forking the plugin.
@@ -7,6 +12,9 @@ Exportable orchestration patterns, automation templates, multi-agent skill bundl
 > **Plugin required:** Install the dreaming plugin at `~/.cursor/plugins/local/dreaming/`. This repo does not replace it — it documents and wires how to call it.
 
 **Full documentation:** see [`docs/`](./docs/) (mirrored from [utrecht-data-os `docs/ops/dreaming/`](https://github.com/OnlineChefGroep/utrecht-data-os/tree/main/docs/ops/dreaming)).
+
+**Contributors:** start with [docs/quickstart.md](./docs/quickstart.md), then run
+`make check` before opening a PR.
 
 ---
 
@@ -91,6 +99,25 @@ All commands support `--json`. Spec: [skills-bundle/shared/cli-contract.md](./sk
 |------|----------|---------|
 | `automations/dream_eval_weekly.json` | Mon 09:00 | Golden corpus eval, faithfulness gate |
 | `automations/dream_nightly_dryrun.json` | Daily 00:00 | Dry-run if pending ≥ 5 |
+
+---
+
+## Open-source operations
+
+| Area | File |
+|------|------|
+| Contributor quickstart | [docs/quickstart.md](./docs/quickstart.md) |
+| Maintainer guide | [docs/maintainer-guide.md](./docs/maintainer-guide.md) |
+| Release process | [docs/release-process.md](./docs/release-process.md) |
+| OSS readiness checklist | [docs/oss-readiness.md](./docs/oss-readiness.md) |
+| Security policy | [SECURITY.md](./SECURITY.md) |
+| Contribution guide | [CONTRIBUTING.md](./CONTRIBUTING.md) |
+
+Local quality gate:
+
+```bash
+make check
+```
 
 ---
 

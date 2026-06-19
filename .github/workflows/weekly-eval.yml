@@ -30,7 +30,7 @@ jobs:
       - name: Validate SDK syntax
         run: |
           node --check bin/dream.js
-          test -f sdk/run-dream-cloud.ts
+          node --experimental-strip-types --check sdk/run-dream-cloud.ts
 
       - name: Install Python deps
         run: cd python && uv sync --extra dev

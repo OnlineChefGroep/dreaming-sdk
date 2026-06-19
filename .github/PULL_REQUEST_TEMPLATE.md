@@ -18,7 +18,13 @@
 
 ## How tested
 
-<!-- Describe how you verified the change. For the Python package: -->
+<!-- Describe how you verified the change. Preferred full local gate: -->
+
+```bash
+make check
+```
+
+<!-- For Python-only changes, include: -->
 
 ```bash
 cd python

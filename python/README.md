@@ -6,7 +6,7 @@ Lightweight agent memory extension for **cursor-dreaming-sdk** (Utrecht Data OS 
 
 ```bash
 cd python
-uv sync --dev
+uv sync --extra dev
 uv run dream-memory init   # requires Postgres
 ```
 
