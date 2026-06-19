@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+$R2_CACHE/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dream artifacts (unless canonical)
+eval/results/
+!eval/results/2026-06-15T07-17-00Z/
+
+# Local state
+.cursor/dreaming/
+~/.cursor/dreaming/
+
+# Environment
+.env
+.env.local
+.agent-memory.env
