@@ -21,6 +21,8 @@ def _doctor() -> None:
     config = FleetConfig.load()
     status = config.status()
     print(json.dumps({"config": status, "redacted": config.redacted()}, indent=2))
+
+    # DB Check
     try:
         store = AgentMemory(config=config, enable_sentry=False).store
         with store._conn() as conn:
@@ -28,6 +30,31 @@ def _doctor() -> None:
         print('{"postgres": "ok"}')
     except Exception as exc:  # noqa: BLE001
         print(json.dumps({"postgres": "error", "detail": str(exc)}))
+
+    # Linear Check
+    if config.linear_api_key:
+        try:
+            from cursor_dreaming_memory.integrations.linear import LinearClient
+            client = LinearClient(api_key=config.linear_api_key)
+            client.gql("query { viewer { id } }")
+            print('{"linear": "ok"}')
+        except Exception as exc: # noqa: BLE001
+            print(json.dumps({"linear": "error", "detail": str(exc)}))
+    else:
+        print('{"linear": "missing_api_key"}')
+
+    # Notion Check
+    if config.notion_api_key or config.notion_token:
+        try:
+            from cursor_dreaming_memory.integrations.notion import NotionMemoryBridge
+            from cursor_dreaming_memory.store.postgres import AgentMemoryStore
+            # Simple check if we can initialize it
+            _ = NotionMemoryBridge(AgentMemoryStore(config.database_url))
+            print('{"notion": "wired"}')
+        except Exception as exc: # noqa: BLE001
+            print(json.dumps({"notion": "error", "detail": str(exc)}))
+    else:
+        print('{"notion": "missing_api_key"}')
 
 
 def main() -> None:
@@ -49,6 +76,11 @@ def main() -> None:
     p_serve = sub.add_parser("serve", help="Run the metrics dashboard")
     p_serve.add_argument("--host", default="0.0.0.0")
     p_serve.add_argument("--port", type=int, default=8787)
+
+    p_export = sub.add_parser("export", help="Export session memory as Markdown")
+    p_export.add_argument("--session-id", required=True)
+    p_export.add_argument("--agent")
+    p_export.add_argument("--output", help="Output filename")
 
     p_remember = sub.add_parser("remember", help="Write a memory record")
     p_remember.add_argument("--agent", default="default")
@@ -76,6 +108,10 @@ def main() -> None:
     p_notion.add_argument("--session-id", default="notion-sync")
     p_notion.add_argument("--session-type", default="cursor")
 
+    p_slack = sub.add_parser("slack-report", help="Report eval results to Slack")
+    p_slack.add_argument("--run-id")
+    p_slack.add_argument("--metrics-json", help="Path to metrics.json")
+
     args = parser.parse_args()
 
     if args.command == "doctor":
@@ -92,6 +128,25 @@ def main() -> None:
         from cursor_dreaming_memory.dashboard import serve
 
         serve(host=args.host, port=args.port)
+        return
+
+    if args.command == "export":
+        records = memory.recall(session_id=args.session_id, agent_id=args.agent, limit=100)
+        lines = [f"# Session Memory Export: {args.session_id}\n"]
+        for r in records:
+            lines.append(f"## {r.memory_type.value} ({r.created_at})")
+            lines.append(f"**Source:** {r.source.value}")
+            lines.append("```json")
+            lines.append(json.dumps(r.content, indent=2))
+            lines.append("```\n")
+
+        md = "\n".join(lines)
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as f:
+                f.write(md)
+            print(f"Exported to {args.output}")
+        else:
+            print(md)
         return
 
     if args.command == "triage":
@@ -155,6 +210,18 @@ def main() -> None:
         )
         record = memory.notion.ingest_page(args.page_id, ctx)
         _print_records([record])
+        return
+
+    if args.command == "slack-report":
+        from cursor_dreaming_memory.integrations.slack import SlackClient
+
+        metrics = {}
+        if args.metrics_json:
+            with open(args.metrics_json, encoding="utf-8") as f:
+                metrics = json.load(f)
+
+        SlackClient().report_eval_result(metrics, run_id=args.run_id)
+        print("Slack report sent.")
         return
 
     parser.print_help()
