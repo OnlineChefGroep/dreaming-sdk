@@ -16,8 +16,7 @@ setup:
 	cd python && uv sync --extra dev
 
 node-check:
-	node --check bin/dream.js
-	node --experimental-strip-types --check sdk/run-dream-cloud.ts
+	npm run lint
 	npm test
 
 lint:

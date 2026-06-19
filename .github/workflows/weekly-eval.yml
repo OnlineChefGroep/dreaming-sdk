@@ -28,9 +28,7 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Validate SDK syntax
-        run: |
-          node --check bin/dream.js
-          node --experimental-strip-types --check sdk/run-dream-cloud.ts
+        run: npm run lint
 
       - name: Install Python deps
         run: cd python && uv sync --extra dev

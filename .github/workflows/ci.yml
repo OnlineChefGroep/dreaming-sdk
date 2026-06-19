@@ -51,11 +51,5 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Check CLI entrypoint syntax
-        run: node --check bin/dream.js
-
-      - name: Check SDK TypeScript wrapper syntax
-        run: node --experimental-strip-types --check sdk/run-dream-cloud.ts
-
-      - name: Run npm checks
+      - name: Run CLI checks
         run: npm run ci

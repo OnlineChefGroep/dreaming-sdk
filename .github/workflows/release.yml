@@ -37,9 +37,7 @@ jobs:
 
       - name: Run quality gate
         run: |
-          node --check bin/dream.js
-          node --experimental-strip-types --check sdk/run-dream-cloud.ts
-          npm test
+          npm run ci
           cd python
           uv run ruff check .
           uv run pytest -q
