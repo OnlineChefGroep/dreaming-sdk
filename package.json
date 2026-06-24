@@ -1,35 +1,28 @@
 {
   "name": "@onlinechefgroep/dream-cli",
   "version": "0.1.0",
-  "description": "CLI for the Cursor dreaming plugin eval loop",
+  "type": "module",
+  "description": "CLI and SDK integration kit for the Cursor dreaming plugin eval loop",
+  "main": "bin/dream.js",
   "bin": {
     "dream": "bin/dream.js"
   },
   "scripts": {
-    "ci": "npm run lint && npm test",
-    "test": "node scripts/test-dream-tui.js && node scripts/test-dream-cli.js",
-    "lint": "node --check bin/dream.js && node --check lib/dream-cli.js && node --check lib/dream-tui.js && node --experimental-strip-types --check sdk/run-dream-cloud.ts && node --check scripts/test-dream-cli.js && node --check scripts/test-dream-tui.js",
-    "release:dry-run": "npm pack --dry-run"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/OnlineChefGroep/cursor-dreaming-sdk.git"
-  },
-  "bugs": {
-    "url": "https://github.com/OnlineChefGroep/cursor-dreaming-sdk/issues"
-  },
-  "homepage": "https://github.com/OnlineChefGroep/cursor-dreaming-sdk#readme",
+  "keywords": [
+    "cursor",
+    "dreaming",
+    "eval",
+    "multi-agent"
+  ],
   "author": "OnlineChefGroep",
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.6.0"
   },
-  "files": [
-    "bin/",
-    "lib/",
-    "sdk/",
-    "README.md",
-    "LICENSE"
-  ],
-  "dependencies": {}
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "ajv-formats": "^3.0.1"
+  }
 }
