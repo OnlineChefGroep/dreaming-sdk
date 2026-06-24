@@ -8,10 +8,10 @@ import json
 import sys
 
 from cursor_dreaming_memory import AgentMemory, FleetConfig, SessionContext
-from cursor_dreaming_memory.types import MemorySource, MemoryType, SessionType
+from cursor_dreaming_memory.types import MemoryRecord, MemorySource, MemoryType, SessionType
 
 
-def _print_records(records: list) -> None:
+def _print_records(records: list[MemoryRecord]) -> None:
     for r in records:
         print(json.dumps(r.model_dump(mode="json"), default=str))
 
@@ -21,7 +21,7 @@ def _enum_value(value: object) -> object:
     return value.value if hasattr(value, "value") else value
 
 
-def render_export_markdown(session_id: str, records: list) -> str:
+def render_export_markdown(session_id: str, records: list[MemoryRecord]) -> str:
     """Render memory records for a session as Markdown (pure, DB-free)."""
     lines: list[str] = [f"# Memory export — {session_id}", ""]
     if not records:
@@ -30,7 +30,8 @@ def render_export_markdown(session_id: str, records: list) -> str:
     for r in records:
         memory_type = _enum_value(r.memory_type)
         source = _enum_value(r.source)
-        lines.append(f"## {memory_type} ({r.created_at})")
+        created = r.created_at.isoformat() if r.created_at else "unknown"
+        lines.append(f"## {memory_type} ({created})")
         lines.append(f"**Source:** {source}")
         lines.append("")
         lines.append("```json")
@@ -42,6 +43,9 @@ def render_export_markdown(session_id: str, records: list) -> str:
 
 def _doctor() -> None:
     """Print config presence + Postgres/Linear/Notion connectivity (no secret values)."""
+    import httpx
+    import psycopg
+
     config = FleetConfig.load()
     status = config.status()
     print(json.dumps({"config": status, "redacted": config.redacted()}, indent=2))
@@ -50,7 +54,7 @@ def _doctor() -> None:
         with store._conn() as conn:
             conn.execute("SELECT 1")
         print('{"postgres": "ok"}')
-    except Exception as exc:  # noqa: BLE001
+    except psycopg.Error as exc:
         print(json.dumps({"postgres": "error", "detail": str(exc)}))
 
     if config.linear_api_key:
@@ -60,7 +64,7 @@ def _doctor() -> None:
             client = LinearClient(api_key=config.linear_api_key)
             client.gql("query { viewer { id } }")
             print('{"linear": "ok"}')
-        except Exception as exc:  # noqa: BLE001
+        except httpx.HTTPError as exc:
             print(json.dumps({"linear": "error", "detail": str(exc)}))
     else:
         print('{"linear": "missing_api_key"}')
@@ -72,7 +76,7 @@ def _doctor() -> None:
 
             NotionMemoryBridge(AgentMemoryStore(config.database_url))
             print('{"notion": "wired"}')
-        except Exception as exc:  # noqa: BLE001
+        except httpx.HTTPError as exc:
             print(json.dumps({"notion": "error", "detail": str(exc)}))
     else:
         print('{"notion": "missing_api_key"}')

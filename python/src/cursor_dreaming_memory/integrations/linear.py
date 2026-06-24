@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import re
 from typing import Any
 
 import httpx
@@ -14,7 +13,6 @@ from cursor_dreaming_memory.types import MemoryRecord, MemorySource, MemoryType
 
 LINEAR_ENDPOINT = "https://api.linear.app/graphql"
 TEAM_KEY = os.environ.get("LINEAR_TEAM_KEY", "CHEF")
-ISSUE_RE = re.compile(r"\b(?:CHEF|GROEP|GRO)-(\d+)\b", re.IGNORECASE)
 
 
 class LinearClient:

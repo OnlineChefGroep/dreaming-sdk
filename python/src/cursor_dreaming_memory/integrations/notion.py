@@ -81,9 +81,10 @@ class NotionClient:
     def extract_title(page: dict[str, Any]) -> str:
         props = page.get("properties", {})
         for prop in props.values():
-            if prop.get("type") == "title":
-                parts = prop.get("title", [])
-                return "".join(p.get("plain_text", "") for p in parts)
+            if prop.get("type") != "title":
+                continue
+            parts = prop.get("title", [])
+            return "".join(p.get("plain_text", "") for p in parts)
         return page.get("id", "untitled")
 
     @staticmethod

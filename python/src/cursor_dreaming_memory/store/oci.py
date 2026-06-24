@@ -15,6 +15,8 @@ This helper just builds/validates a DSN from fleet config or OCI metadata.
 
 from __future__ import annotations
 
+from urllib.parse import quote_plus
+
 from cursor_dreaming_memory.config import FleetConfig, get_secret
 
 # Fleet hosts (Tailscale IPs) — A1 nodes that can host Postgres.
@@ -34,7 +36,7 @@ def build_dsn(
     port: int = 5432,
 ) -> str:
     """Build a Postgres DSN for a named fleet host or raw hostname/IP."""
-    password = password or get_secret("AGENT_MEMORY_DB_PASSWORD", "postgres")
+    password = quote_plus(password or get_secret("AGENT_MEMORY_DB_PASSWORD", "postgres") or "")
     resolved = FLEET_POSTGRES_HOSTS.get(host, host)
     return f"postgresql://{user}:{password}@{resolved}:{port}/{dbname}"
 

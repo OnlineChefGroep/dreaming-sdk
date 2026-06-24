@@ -124,10 +124,11 @@ class AgentMemory:
         vector: list[float],
     ) -> MemoryRecord | None:
         if self.semantic is None:
-            self.semantic = SemanticMemoryStore()
+            raise RuntimeError("semantic store not configured — pass SemanticMemoryStore() to AgentMemory")
         if not self.semantic.enabled:
             return None
-        assert record.id is not None
+        if record.id is None:
+            raise ValueError("record must have an id before indexing into semantic store")
         self.semantic.index_memory(
             record.id, text, vector, metadata={"source": record.source.value}
         )

@@ -33,8 +33,10 @@ python-build:
 release-dry-run: check python-build
 	npm pack --dry-run
 
-check: setup lint test
-	python3 -c "import yaml; [yaml.safe_load(open(path)) for path in ('.github/workflows/ci.yml', '.github/workflows/weekly-eval.yml', '.github/workflows/codeql.yml', '.github/workflows/dependency-review.yml', '.github/workflows/release.yml', '.github/dependabot.yml', '.github/ISSUE_TEMPLATE/config.yml')]; print('yaml ok')"
+yaml-validate:
+	cd python && uv run python -c "import yaml; [yaml.safe_load(open(path)) for path in ('../.github/workflows/ci.yml', '../.github/workflows/weekly-eval.yml', '../.github/workflows/codeql.yml', '../.github/workflows/dependency-review.yml', '../.github/workflows/release.yml', '../.github/dependabot.yml', '../.github/ISSUE_TEMPLATE/config.yml')]; print('yaml ok')"
+
+check: setup lint test yaml-validate
 
 clean:
 	rm -rf python/.pytest_cache python/.ruff_cache python/dist python/build

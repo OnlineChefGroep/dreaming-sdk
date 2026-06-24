@@ -48,6 +48,8 @@ def breadcrumb(message: str, data: dict[str, Any] | None = None, category: str =
 
 
 def capture(exc: BaseException) -> None:
+    if not _ACTIVE:
+        return
     try:
         import sentry_sdk
 

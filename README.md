@@ -33,11 +33,22 @@ Exportable orchestration patterns, automation templates, multi-agent skill bundl
 
 ### 1. Verify plugin
 
-```powershell
-node $env:USERPROFILE\.cursor\plugins\local\dreaming\cli\dream.mjs test --json
+```bash
+node bin/dream.js doctor
 ```
 
-### 2. Install eval skills (Codex example)
+The CLI auto-detects the plugin at `~/.cursor/plugins/local/dreaming/`. If present, it
+reports the plugin root and version; if absent, it falls back to local TUI mode.
+
+### 2. Run the TUI (interactive)
+
+```bash
+node bin/dream.js tui
+```
+
+Use arrow keys or `j`/`k` to navigate, `/` to fuzzy-filter, `Enter` to run a command.
+
+### 3. Install eval skills (Codex example)
 
 ```powershell
 .\skills-bundle\install-dream-skills.ps1 -Platform codex -Target C:\path\to\your-repo
@@ -45,18 +56,17 @@ node $env:USERPROFILE\.cursor\plugins\local\dreaming\cli\dream.mjs test --json
 
 Then prompt: **"Apply the dream-eval-loop skill to run one golden corpus evaluation pass."**
 
-### 3. Cursor Automation (weekly eval)
+### 4. Cursor Automation (weekly eval)
 
 1. Open Cursor → Automations → New.
 2. Prefill from `automations/dream_eval_weekly.json` (or MCP `open_automation`).
 3. Cron: Monday 09:00 — prompt applies `dream-eval-loop` skill.
 4. Artifacts: `eval/results/<run_id>/metrics.json` + `summary.md`.
 
-### 4. Cursor SDK (local)
+### 5. Cursor SDK (cloud)
 
-```powershell
-cd $env:USERPROFILE\.cursor\plugins\local\dreaming
-$env:CURSOR_API_KEY = "cursor_..."
+```bash
+export CURSOR_API_KEY="cursor_..."
 node --experimental-strip-types sdk/run-dream-cloud.ts
 ```
 
@@ -81,12 +91,17 @@ Details: [docs/multi-agent.md](./docs/multi-agent.md) · [skills-bundle/README.m
 ## CLI surface
 
 ```text
-dream test        # deterministic gates (hard_fail stops eval)
-dream eval        # prepare eval/results/<run_id>/
-dream status      # pending session counts (live loop only)
-dream scope       # in-scope pending list
-dream decisions   # acceptance/regret from W1 log
-dream index       # index summary
+dream doctor        # inspect plugin and runtime
+dream tui           # interactive terminal (human mode)
+dream agent --json  # machine-readable agent envelope
+dream run           # test → eval → decisions flow
+dream test          # deterministic gates (hard_fail stops eval)
+dream eval          # prepare eval/results/<run_id>/
+dream status        # pending session counts (live loop only)
+dream scope         # in-scope pending list
+dream decisions     # acceptance/regret from W1 log
+dream index         # index summary
+dream cloud         # run SDK cloud wrapper
 ```
 
 All commands support `--json`. Spec: [skills-bundle/shared/cli-contract.md](./skills-bundle/shared/cli-contract.md).
@@ -166,8 +181,8 @@ cursor-dreaming-sdk/
 |-------|-------------|--------|
 | 0 | Docs + automation JSON + skills bundle (this repo) | ✅ Done |
 | 0.5 | **Agent memory** (`python/`) — Postgres SSOT, Linear/Notion, optional LanceDB — [docs/agent-memory.md](./docs/agent-memory.md) | ✅ Done |
-| 1 | **npm `@onlinechefgroep/dream-cli`** — unified CLI + schema validation | 🚧 In progress |
-| 2 | **GitHub Actions** — weekly golden evaluation + Slack/Notion reporting | 🚧 In progress |
+| 1 | **npm `@onlinechefgroep/dream-cli`** — unified CLI + schema validation | ✅ Done |
+| 2 | **GitHub Actions** — weekly golden evaluation + Slack/Notion reporting | ✅ Done |
 | 3 | **Webhook API** — `POST /v1/dream/eval` + orchestration via MCP | 📅 Planned |
 | 4 | **Soul Evolution** — automatic `soul.md` refinement based on acceptance rates | 📅 Planned |
 | 5 | **Fleet Orchestration** — centralized dream-eval across multiple agent nodes | 📅 Planned |

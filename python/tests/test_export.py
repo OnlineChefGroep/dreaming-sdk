@@ -23,7 +23,7 @@ def _record() -> MemoryRecord:
 def test_render_export_markdown_with_records() -> None:
     md = render_export_markdown("sess-1", [_record()])
     assert md.startswith("# Memory export — sess-1")
-    assert "## fact (2026-06-15 09:00:00)" in md
+    assert "## fact (2026-06-15T09:00:00)" in md
     assert "**Source:** user" in md
     assert "```json" in md
     assert '"key": "value"' in md

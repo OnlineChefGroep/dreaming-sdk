@@ -30,7 +30,8 @@ class AgentMemoryStore:
 
     def ensure_schema(self, schema_path: str | None = None) -> None:
         if schema_path:
-            sql = open(schema_path, encoding="utf-8").read()
+            with open(schema_path, encoding="utf-8") as f:
+                sql = f.read()
         else:
             from pathlib import Path
 

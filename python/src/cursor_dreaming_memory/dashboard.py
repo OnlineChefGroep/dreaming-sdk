@@ -12,7 +12,6 @@ or:
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from cursor_dreaming_memory.config import FleetConfig
@@ -122,7 +121,7 @@ if FastAPI is not None:
 
     @app.get("/api/metrics")
     def api_metrics(days: int = 14) -> Any:
-        return JSONResponse(json.loads(json.dumps(get_metrics(days), default=str)))
+        return JSONResponse(get_metrics(days))
 
     @app.get("/healthz")
     def healthz() -> Any:

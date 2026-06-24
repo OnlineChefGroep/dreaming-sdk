@@ -186,9 +186,10 @@ dreaming plugin (local install)
         ▼ documents + thin wrappers
 cursor-dreaming-sdk (GitHub)
   docs/ · skills-bundle/ · automations/ · python/ · LICENSE
+  bin/dream.js · lib/ · sdk/run-dream-cloud.ts · schema/
         │
-        ▼ optional future
-@onlinechefgroep/dream-cli (npm, Phase 1)
+        ▼ published CLI
+@onlinechefgroep/dream-cli (npm)
 ```
 
 The plugin holds subagent prompts, golden corpus, hooks, and canonical-hash logic. The SDK repo holds integration artifacts only — not a fork of the plugin.

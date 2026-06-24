@@ -48,7 +48,7 @@ class SemanticMemoryStore:
                         "text": "placeholder",
                         "vector": [0.0] * 384,
                     }],
-                    mode="overwrite",
+                    exist_ok=True,
                 )
                 self._table.delete("memory_id = 'placeholder'")
         return self._table

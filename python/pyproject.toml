@@ -1,7 +1,7 @@
 [project]
 name = "cursor-dreaming-memory"
 version = "0.1.0"
-description = "Lightweight agent memory extension for cursor-dreaming-sdk (Utrecht Data OS / CHEF-308)"
+description = "Lightweight agent memory extension for cursor-dreaming-sdk — Postgres-backed agent memory with Linear, Notion, and Cloudflare integrations"
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
 license = { text = "MIT" }

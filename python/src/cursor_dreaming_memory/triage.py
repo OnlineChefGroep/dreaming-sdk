@@ -69,10 +69,8 @@ def classify(title: str, description: str | None) -> TriageResult:
     labels: list[str] = []
     areas: list[str] = []
     priority: int | None = None
-    hits: list[str] = []
     for pattern, prio, rule_labels, area in _RULES:
         if pattern.search(text):
-            hits.append(pattern.pattern.split("\\b")[1] if "\\b" in pattern.pattern else "match")
             if prio is not None and (priority is None or prio < priority):
                 priority = prio
             for lb in rule_labels:
@@ -125,7 +123,6 @@ class AutoTriage:
         comment: bool = False,
     ) -> list[TriageResult]:
         issues = self.client.list_issues(state=state, limit=limit)
-        label_map = self.client.team_labels() if apply else {}
         results: list[TriageResult] = []
         ctx = SessionContext(
             session_id="auto-triage",
@@ -152,6 +149,7 @@ class AutoTriage:
             )
 
             if apply:
+                label_map = self.client.team_labels()
                 existing = [n["id"] for n in issue.get("labels", {}).get("nodes", [])]
                 new_ids = [label_map[lb] for lb in res.labels if lb in label_map]
                 merged = list(dict.fromkeys(existing + new_ids))

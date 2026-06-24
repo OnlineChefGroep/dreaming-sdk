@@ -30,6 +30,14 @@ Read these before making architectural changes:
 - [architecture.md](./architecture.md) - dream loop architecture
 - [agent-memory.md](./agent-memory.md) - Python memory extension
 
+Try the CLI:
+
+```bash
+node bin/dream.js doctor     # check plugin and runtime
+node bin/dream.js tui         # interactive terminal menu
+node bin/dream.js --help      # full command reference
+```
+
 ## 3. Set up local dependencies
 
 ```bash
@@ -52,12 +60,11 @@ make check
 If you do not have `make`, run the individual commands:
 
 ```bash
-node --check bin/dream.js
-node --experimental-strip-types --check sdk/run-dream-cloud.ts
-npm test
+npm run lint                  # Node syntax checks
+npm test                      # Node tests (TUI + CLI)
 cd python
-uv run ruff check .
-uv run pytest -q
+uv run ruff check .           # Python lint
+uv run pytest -q              # Python tests
 ```
 
 ## 5. Work safely

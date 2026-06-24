@@ -119,9 +119,8 @@ class FleetConfig:
                 return "(unset)"
             return v[:4] + "…" + v[-2:] if len(v) > 8 else "set"
 
-        db = self.database_url or "(unset)"
         return {
-            "database_url": re.sub(r":[^:@/]+@", ":***@", db),
+            "database_url": re.sub(r":[^:@/]+@", ":***@", self.database_url or "(unset)"),
             "linear_api_key": mask(self.linear_api_key),
             "notion_api_key": mask(self.notion_api_key),
             "cloudflare_api_token": mask(self.cloudflare_api_token),
