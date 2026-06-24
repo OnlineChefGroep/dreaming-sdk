@@ -1,49 +1,55 @@
-name: Weekly Eval Loop
+name: Weekly Dream Eval
 
 on:
   schedule:
-    - cron: '0 9 * * 1' # Mondays at 09:00 UTC
-  workflow_dispatch:
+    - cron: '0 9 * * 1'  # Mondays at 09:00 UTC
+  workflow_dispatch:       # allow manual trigger
 
 jobs:
-  eval:
+  dream-eval:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-      - name: Setup Dreaming Plugin (Mock/Placeholder)
+      - name: Install uv
         run: |
-          # In a real scenario, you would checkout the private plugin repo here:
-          # uses: actions/checkout@v4
-          # with:
-          #   repository: OnlineChefGroep/dreaming-plugin
-          #   path: dreaming-plugin
-          #   token: ${{ secrets.GH_PAT }}
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-          # For now, we ensure the directory exists to avoid immediate CLI failure
-          mkdir -p ~/.cursor/plugins/local/dreaming/sdk
-          mkdir -p ~/.cursor/plugins/local/dreaming/cli
-          echo "console.log('Mock Dreaming CLI')" > ~/.cursor/plugins/local/dreaming/cli/dream.mjs
-          echo "console.log('Mock Cloud Driver')" > ~/.cursor/plugins/local/dreaming/sdk/run-dream-cloud.ts
+      - name: Validate SDK syntax
+        run: npm run lint
 
-      - name: Run Eval Loop (Cloud)
+      - name: Install Python deps
+        run: cd python && uv sync --extra dev
+
+      - name: Run Python checks
+        run: |
+          cd python
+          uv run ruff check .
+          uv run pytest -q
+
+      - name: Run dream eval (cloud)
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
-          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         run: |
-          # Use the wrapper which delegates to the plugin
-          node --experimental-strip-types sdk/run-dream-cloud.ts --cloud
+          if [ -d "$HOME/.cursor/plugins/local/dreaming" ]; then
+            node --experimental-strip-types sdk/run-dream-cloud.ts --cloud
+          else
+            echo "::notice::dreaming plugin not present; skipping cloud eval (validation above already ran)"
+          fi
 
-      - name: Upload Artifacts
+      - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
