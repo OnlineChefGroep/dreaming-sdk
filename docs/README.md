@@ -168,6 +168,10 @@ Open Automations and prefill from `automations/dream_eval_weekly.json` in [curso
 | [multi-agent.md](./multi-agent.md) | Claude, Codex, OpenCode, Grok consumption |
 | [eval-quality.md](./eval-quality.md) | Golden corpus, metrics, judge faithfulness, known weaknesses |
 | [operations.md](./operations.md) | Automations, CLI cheat sheet, troubleshooting |
+| [quickstart.md](./quickstart.md) | Contributor setup and local quality gate |
+| [maintainer-guide.md](./maintainer-guide.md) | Review, merge, dependency, and incident practices |
+| [release-process.md](./release-process.md) | Release checklist and artifact build flow |
+| [oss-readiness.md](./oss-readiness.md) | Public readiness checklist and remaining decisions |
 | [GITHUB-README.md](./GITHUB-README.md) | README for the cursor-dreaming-sdk repo |
 | [skills-bundle/](../skills-bundle/) | Portable multi-agent skill scaffold |
 

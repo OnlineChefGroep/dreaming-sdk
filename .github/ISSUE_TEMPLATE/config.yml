@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation & questions
+    url: https://github.com/OnlineChefGroep/cursor-dreaming-sdk
+    about: Read the README and docs/ first; open a discussion for general questions.

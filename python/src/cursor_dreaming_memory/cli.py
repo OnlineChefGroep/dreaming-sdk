@@ -16,8 +16,32 @@ def _print_records(records: list) -> None:
         print(json.dumps(r.model_dump(mode="json"), default=str))
 
 
+def _enum_value(value: object) -> object:
+    """Return the underlying value for StrEnum members, pass others through."""
+    return value.value if hasattr(value, "value") else value
+
+
+def render_export_markdown(session_id: str, records: list) -> str:
+    """Render memory records for a session as Markdown (pure, DB-free)."""
+    lines: list[str] = [f"# Memory export — {session_id}", ""]
+    if not records:
+        lines.append("_No memory records found._")
+        return "\n".join(lines) + "\n"
+    for r in records:
+        memory_type = _enum_value(r.memory_type)
+        source = _enum_value(r.source)
+        lines.append(f"## {memory_type} ({r.created_at})")
+        lines.append(f"**Source:** {source}")
+        lines.append("")
+        lines.append("```json")
+        lines.append(json.dumps(r.content, indent=2, default=str, ensure_ascii=False))
+        lines.append("```")
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def _doctor() -> None:
-    """Print config presence + Postgres connectivity (no secret values)."""
+    """Print config presence + Postgres/Linear/Notion connectivity (no secret values)."""
     config = FleetConfig.load()
     status = config.status()
     print(json.dumps({"config": status, "redacted": config.redacted()}, indent=2))
@@ -28,6 +52,30 @@ def _doctor() -> None:
         print('{"postgres": "ok"}')
     except Exception as exc:  # noqa: BLE001
         print(json.dumps({"postgres": "error", "detail": str(exc)}))
+
+    if config.linear_api_key:
+        try:
+            from cursor_dreaming_memory.integrations.linear import LinearClient
+
+            client = LinearClient(api_key=config.linear_api_key)
+            client.gql("query { viewer { id } }")
+            print('{"linear": "ok"}')
+        except Exception as exc:  # noqa: BLE001
+            print(json.dumps({"linear": "error", "detail": str(exc)}))
+    else:
+        print('{"linear": "missing_api_key"}')
+
+    if config.notion_api_key:
+        try:
+            from cursor_dreaming_memory.integrations.notion import NotionMemoryBridge
+            from cursor_dreaming_memory.store.postgres import AgentMemoryStore
+
+            NotionMemoryBridge(AgentMemoryStore(config.database_url))
+            print('{"notion": "wired"}')
+        except Exception as exc:  # noqa: BLE001
+            print(json.dumps({"notion": "error", "detail": str(exc)}))
+    else:
+        print('{"notion": "missing_api_key"}')
 
 
 def main() -> None:
@@ -76,6 +124,15 @@ def main() -> None:
     p_notion.add_argument("--session-id", default="notion-sync")
     p_notion.add_argument("--session-type", default="cursor")
 
+    p_export = sub.add_parser("export", help="Export a session's memory as Markdown")
+    p_export.add_argument("--session-id", required=True)
+    p_export.add_argument("--agent", default=None)
+    p_export.add_argument("--output", default=None, help="Write Markdown to this file")
+
+    p_slack = sub.add_parser("slack-report", help="Post an eval report to Slack")
+    p_slack.add_argument("--run-id", default=None)
+    p_slack.add_argument("--metrics-json", default=None, help="Path to metrics JSON file")
+
     args = parser.parse_args()
 
     if args.command == "doctor":
@@ -103,6 +160,38 @@ def main() -> None:
         for r in results:
             print(json.dumps(r.to_content(), default=str))
         print(f"# triaged {len(results)} issue(s); apply={args.apply}")
+        return
+
+    if args.command == "slack-report":
+        from cursor_dreaming_memory.integrations.slack import SlackClient
+
+        metrics: dict = {}
+        if args.metrics_json:
+            with open(args.metrics_json, encoding="utf-8") as fh:
+                metrics = json.load(fh)
+        sent = SlackClient().report_eval_result(metrics, run_id=args.run_id)
+        if sent:
+            print(json.dumps({"slack": "sent", "run_id": args.run_id}))
+        else:
+            print(json.dumps({"slack": "skipped", "reason": "no SLACK_WEBHOOK_URL configured"}))
+        return
+
+    if args.command == "export":
+        # Initialize the store/memory BEFORE use; do not rely on the shared
+        # `memory = AgentMemory()` defined later in this function.
+        memory = AgentMemory()
+        records = memory.recall(
+            session_id=args.session_id,
+            agent_id=args.agent,
+            limit=100,
+        )
+        markdown = render_export_markdown(args.session_id, records)
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as fh:
+                fh.write(markdown)
+            print(json.dumps({"export": "written", "path": args.output, "records": len(records)}))
+        else:
+            print(markdown)
         return
 
     memory = AgentMemory()

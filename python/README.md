@@ -6,7 +6,7 @@ Lightweight agent memory extension for **cursor-dreaming-sdk** (Utrecht Data OS 
 
 ```bash
 cd python
-uv sync --dev
+uv sync --extra dev
 uv run dream-memory init   # requires Postgres
 ```
 
@@ -37,7 +37,14 @@ dream-memory remember --session-id run-1 --content '{"note":"hello"}'
 dream-memory recall --session-id run-1
 dream-memory linear-ingest CHEF-308
 dream-memory notion-ingest <page_id>
+dream-memory export --session-id run-1 --output run-1.md
+dream-memory slack-report --run-id run-1 --metrics-json metrics.json
+dream-memory doctor
 ```
+
+- `export` writes a session's memory records as Markdown (`--output` to a file, or stdout).
+- `slack-report` posts an eval report to Slack via `SLACK_WEBHOOK_URL` (no-op if unset).
+- `doctor` reports config presence plus Postgres, Linear, and Notion connectivity.
 
 ## Example flow
 

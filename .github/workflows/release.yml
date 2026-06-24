@@ -1,0 +1,61 @@
+name: Release Artifacts
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-artifacts:
+    name: Build release artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Install Python dependencies
+        run: cd python && uv sync --extra dev
+
+      - name: Run quality gate
+        run: |
+          npm run ci
+          cd python
+          uv run ruff check .
+          uv run pytest -q
+
+      - name: Build Python package
+        run: cd python && uv build
+
+      - name: Build npm tarball
+        run: npm pack --dry-run
+
+      - name: Upload Python distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: python/dist/*
+
+      - name: Upload npm package summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-package-manifest
+          path: package.json
