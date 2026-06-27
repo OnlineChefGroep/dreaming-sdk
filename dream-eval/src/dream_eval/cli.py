@@ -135,7 +135,10 @@ def _run_list(args: argparse.Namespace) -> None:
 
     runs = backend.list_runs(limit=args.limit)
     for run in runs:
-        print(json.dumps(run, default=str))
+        safe_run = dict(run)
+        if "secret_leak" in safe_run:
+            safe_run["secret_leak"] = "[REDACTED]"
+        print(json.dumps(safe_run, default=str))
 
 
 def _run_show(args: argparse.Namespace) -> None:
