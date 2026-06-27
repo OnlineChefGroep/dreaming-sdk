@@ -4,9 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import sys
-from datetime import UTC, datetime
 from pathlib import Path
 
 from dream_eval.types import EvalMode, EvalReport, EvalResult, Labels
@@ -29,16 +29,10 @@ def main() -> None:
     p_run.add_argument("--nli", action="store_true", help="Use NLI content matching")
 
     p_gates = sub.add_parser("gates", help="Run only deterministic gates")
-    p_gates.add_argument("--text", default=None, help="Text to check for secret leaks")
+    p_gates.add_argument("--text", default=None, help="Text to check for configured leaks")
     p_gates.add_argument("--file", default=None, help="File to check hash determinism")
     p_gates.add_argument("--hash", default=None, help="Expected hash (sha256:hex)")
-    p_gates.add_argument("--labels", default=None, help="labels.json with secret_leak.forbidden")
-    p_gates.add_argument(
-        "--forbidden-pattern",
-        action="append",
-        default=[],
-        help="Forbidden regex/literal pattern for secret leak checks",
-    )
+    p_gates.add_argument("--labels", default=None, help="labels.json with leak patterns")
 
     p_score = sub.add_parser("score", help="Score an eval report against labels")
     p_score.add_argument("--report", required=True, help="Path to eval-report.json")
@@ -104,10 +98,9 @@ def _run_gates(args: argparse.Namespace) -> None:
 
     results = []
     labels = _load_labels(args.labels) if args.labels else Labels()
-    forbidden = [*labels.secret_leak.forbidden, *args.forbidden_pattern]
 
     if args.text:
-        result = check_secret_leak(args.text, forbidden or None)
+        result = check_secret_leak(args.text, labels.secret_leak.forbidden or None)
         results.append(result)
 
     if args.file:
@@ -152,7 +145,7 @@ def _run_eval(args: argparse.Namespace) -> None:
             f"{faithfulness.faithfulness_score:.3f} < {args.threshold:.3f}"
         )
 
-    now = datetime.now(UTC)
+    now = dt.datetime.now(dt.UTC)
     result = EvalResult(
         run_id=now.strftime("%Y-%m-%dT%H-%M-%SZ"),
         date=now,
