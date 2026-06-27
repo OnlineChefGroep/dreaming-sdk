@@ -2,4 +2,4 @@
 
 const { run } = require("../lib/dream-cli");
 
-process.exit(run(process.argv.slice(2), { binFile: __filename }));
+process.exitCode = run(process.argv.slice(2), { binFile: __filename });

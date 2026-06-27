@@ -41,7 +41,7 @@ All commands support `--json`. Full contract: [skills-bundle/shared/cli-contract
 ## Cursor Automations
 
 Prefill source: `~/.cursor/skills/dream-eval-loop/automations.json`  
-Published copies: [dreaming-sdk/automations/](https://github.com/OnlineChefGroep/dreaming-sdk)
+Published copies: [dreaming-sdk/automations/](https://github.com/OnlineChefGroep/dreaming-sdk/tree/main/automations)
 
 ### dream_eval_weekly
 

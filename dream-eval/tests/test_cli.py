@@ -35,16 +35,22 @@ def test_gates_no_args(capsys):
 def test_run_eval(capsys):
     with tempfile.TemporaryDirectory() as tmpdir:
         with patch("sys.argv", ["dream-eval", "run", "--output-dir", tmpdir]):
-            main()
+            try:
+                main()
+            except SystemExit as e:
+                assert e.code == 1
         out = capsys.readouterr().out
         data = json.loads(out)
         assert "run_id" in data
-        assert data["hard_fail"] is False
+        assert data["hard_fail"] is True
 
 
 def test_run_eval_default_dir(capsys):
     with patch("sys.argv", ["dream-eval", "run"]):
-        main()
+        try:
+            main()
+        except SystemExit as e:
+            assert e.code == 1
     out = capsys.readouterr().out
     data = json.loads(out)
     assert "run_id" in data
@@ -53,7 +59,10 @@ def test_run_eval_default_dir(capsys):
 def test_run_eval_live_mode(capsys):
     with tempfile.TemporaryDirectory() as tmpdir:
         with patch("sys.argv", ["dream-eval", "run", "--mode", "live", "--output-dir", tmpdir]):
-            main()
+            try:
+                main()
+            except SystemExit as e:
+                assert e.code == 1
         out = capsys.readouterr().out
         data = json.loads(out)
         assert data["run_id"]

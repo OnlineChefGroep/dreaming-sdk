@@ -9,7 +9,7 @@ import json
 import sys
 from pathlib import Path
 
-from dream_eval.types import EvalMode, EvalReport, EvalResult, Labels
+from dream_eval.types import EvalMode, EvalReport, EvalResult, GateResult, GateStatus, Labels
 
 
 def main() -> None:
@@ -66,12 +66,18 @@ def main() -> None:
 def _load_labels(labels_path: str | None = None, corpus_path: str | None = None) -> Labels:
     if labels_path:
         path = Path(labels_path)
+        if not path.exists():
+            print(f"Error: labels file not found: {path}", file=sys.stderr)
+            sys.exit(1)
     elif corpus_path:
         path = Path(corpus_path) / "labels.json"
+        if not path.exists():
+            print(f"Error: labels file not found: {path}", file=sys.stderr)
+            sys.exit(1)
     else:
         path = Path("eval/golden-corpus/labels.json")
-    if not path.exists():
-        return Labels()
+        if not path.exists():
+            return Labels()
     return Labels.model_validate(json.loads(path.read_text(encoding="utf-8")))
 
 
@@ -90,6 +96,10 @@ def _load_eval_report(
         if path.exists():
             return EvalReport.model_validate(json.loads(path.read_text(encoding="utf-8")))
 
+    if report_path:
+        print(f"Error: eval report not found: {report_path}", file=sys.stderr)
+        sys.exit(1)
+
     return EvalReport()
 
 
@@ -97,9 +107,9 @@ def _run_gates(args: argparse.Namespace) -> None:
     from dream_eval.gates import check_hash_determinism, check_secret_leak
 
     results = []
-    labels = _load_labels(args.labels) if args.labels else Labels()
 
     if args.text:
+        labels = _load_labels(args.labels) if args.labels else Labels()
         result = check_secret_leak(args.text, labels.secret_leak.forbidden or None)
         results.append(result)
 
@@ -144,6 +154,15 @@ def _run_eval(args: argparse.Namespace) -> None:
             "faithfulness below threshold: "
             f"{faithfulness.faithfulness_score:.3f} < {args.threshold:.3f}"
         )
+        msg = (
+            f"Score {faithfulness.faithfulness_score:.3f}"
+            f" below threshold {args.threshold:.3f}"
+        )
+        gates.append(GateResult(
+            name="faithfulness_threshold",
+            status=GateStatus.FAIL,
+            message=msg,
+        ))
 
     now = dt.datetime.now(dt.UTC)
     result = EvalResult(

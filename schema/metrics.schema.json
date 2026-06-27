@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Dream Metrics",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "run_id": { "type": "string", "minLength": 1 },
     "date": { "type": "string", "format": "date-time" },

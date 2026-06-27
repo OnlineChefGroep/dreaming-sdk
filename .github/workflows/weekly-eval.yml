@@ -37,7 +37,13 @@ jobs:
       - name: Run deterministic gates
         run: |
           cd dream-eval
-          CONTENT=$(cat ../eval/golden-corpus/transcripts/*.jsonl 2>/dev/null || echo "no transcripts")
+          shopt -s nullglob
+          FILES=(../eval/golden-corpus/transcripts/*.jsonl)
+          if [[ ${#FILES[@]} -eq 0 ]]; then
+            echo "Error: no transcript files in eval/golden-corpus/transcripts/" >&2
+            exit 1
+          fi
+          CONTENT=$(cat "${FILES[@]}")
           uv run dream-eval gates --labels ../eval/golden-corpus/labels.json --text "$CONTENT"
 
       - name: Create scored eval run

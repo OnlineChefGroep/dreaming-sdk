@@ -57,7 +57,7 @@ gunzip -c backups/agent_memory_YYYY-MM-DD.sql.gz | \
 | `connection refused` | container down / not on private mesh | `ssh <agent-memory-host> 'cd ~/agent-memory && docker compose up -d'` |
 | Notion 401 | token invalid | refresh `NOTION_API_KEY`, re-run env sync |
 | Notion ingest empty | integration not invited to page | share page with the Notion integration |
-| Linear "team not found" | wrong team key | set `LINEAR_TEAM_KEY=CHEF` |
+| Linear "team not found" | wrong team ID | set `LINEAR_TEAM_ID=<team-uuid>` |
 | LanceDB disabled | extra not installed | `uv sync --extra semantic` |
 
 ## Security notes
