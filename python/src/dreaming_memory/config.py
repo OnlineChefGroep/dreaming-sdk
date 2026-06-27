@@ -115,9 +115,7 @@ class FleetConfig:
         """Masked summary for logging."""
 
         def mask(v: str | None) -> str:
-            if not v:
-                return "(unset)"
-            return v[:4] + "…" + v[-2:] if len(v) > 8 else "set"
+            return "set" if v else "(unset)"
 
         return {
             "database_url": re.sub(r":[^:@/]+@", ":***@", self.database_url or "(unset)"),
@@ -126,5 +124,5 @@ class FleetConfig:
             "cloudflare_api_token": mask(self.cloudflare_api_token),
             "cloudflare_account_id": mask(self.cloudflare_account_id),
             "sentry_dsn": "set" if self.sentry_dsn else "(unset)",
-            "lance_db_uri": self.lance_db_uri or "(unset)",
+            "lance_db_uri": mask(self.lance_db_uri),
         }
