@@ -78,3 +78,81 @@ def test_get_store_reuse():
         assert result is dash_mod._store
     finally:
         dash_mod._store = original
+
+
+def test_healthz_ok():
+    with patch("dreaming_memory.dashboard._get_store") as mock_get:
+        mock_store = MagicMock()
+        mock_store.metrics.return_value = {"total": 5}
+        mock_get.return_value = mock_store
+        with patch("dreaming_memory.dashboard.FleetConfig") as MockCfg:
+            MockCfg.load.return_value.status.return_value = {"db": True}
+            import dreaming_memory.dashboard as dash_mod
+            if dash_mod.app is None:
+                return
+            from starlette.testclient import TestClient
+            client = TestClient(dash_mod.app)
+            resp = client.get("/healthz")
+            assert resp.status_code == 200
+            assert resp.json()["status"] == "ok"
+
+
+def test_healthz_error():
+    with patch("dreaming_memory.dashboard._get_store") as mock_get:
+        mock_store = MagicMock()
+        mock_store.metrics.side_effect = RuntimeError("db down")
+        mock_get.return_value = mock_store
+        with patch("dreaming_memory.dashboard.FleetConfig") as MockCfg:
+            MockCfg.load.return_value.status.return_value = {}
+            import dreaming_memory.dashboard as dash_mod
+            if dash_mod.app is None:
+                return
+            from starlette.testclient import TestClient
+            client = TestClient(dash_mod.app)
+            resp = client.get("/healthz")
+            assert resp.status_code == 500
+            assert resp.json()["status"] == "error"
+
+
+def test_api_metrics():
+    with patch("dreaming_memory.dashboard._get_store") as mock_get:
+        mock_store = MagicMock()
+        mock_store.metrics.return_value = {"total": 42}
+        mock_get.return_value = mock_store
+        import dreaming_memory.dashboard as dash_mod
+        if dash_mod.app is None:
+            return
+        from starlette.testclient import TestClient
+        client = TestClient(dash_mod.app)
+        resp = client.get("/api/metrics")
+        assert resp.status_code == 200
+        assert resp.json()["total"] == 42
+
+
+def test_index_route():
+    with patch("dreaming_memory.dashboard._get_store") as mock_get:
+        mock_store = MagicMock()
+        mock_store.metrics.return_value = {
+            "total": 10, "last_activity": None, "by_source": [],
+            "by_memory_type": [], "by_session_type": [], "by_agent": [],
+            "per_day": [], "triage_decisions": 0, "recent": [],
+        }
+        mock_get.return_value = mock_store
+        import dreaming_memory.dashboard as dash_mod
+        if dash_mod.app is None:
+            return
+        from starlette.testclient import TestClient
+        client = TestClient(dash_mod.app)
+        resp = client.get("/")
+        assert resp.status_code == 200
+        assert "Agent Memory" in resp.text
+
+
+def test_serve():
+    try:
+        from dreaming_memory.dashboard import serve
+        with patch("uvicorn.run") as mock_run:
+            serve(host="127.0.0.1", port=9999)
+            mock_run.assert_called_once()
+    except (ImportError, NameError):
+        pass
