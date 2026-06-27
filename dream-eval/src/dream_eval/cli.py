@@ -81,7 +81,10 @@ def _load_labels(labels_path: str | None = None, corpus_path: str | None = None)
     return Labels.model_validate(json.loads(path.read_text(encoding="utf-8")))
 
 
-def _load_eval_report(report_path: str | None = None, corpus_path: str | None = None) -> EvalReport:
+def _load_eval_report(
+    report_path: str | None = None,
+    corpus_path: str | None = None,
+) -> EvalReport:
     candidates: list[Path] = []
     if report_path:
         candidates.append(Path(report_path))
@@ -145,7 +148,8 @@ def _run_eval(args: argparse.Namespace) -> None:
 
     if faithfulness.faithfulness_score < args.threshold:
         faithfulness.specificity_flags.append(
-            f"faithfulness below threshold: {faithfulness.faithfulness_score:.3f} < {args.threshold:.3f}"
+            "faithfulness below threshold: "
+            f"{faithfulness.faithfulness_score:.3f} < {args.threshold:.3f}"
         )
 
     now = datetime.now(timezone.utc)
@@ -162,13 +166,18 @@ def _run_eval(args: argparse.Namespace) -> None:
 
     backend.save_eval_result(result)
 
-    print(json.dumps({
-        "run_id": result.run_id,
-        "output": str(Path(output_dir) / result.run_id),
-        "hard_fail": result.hard_fail,
-        "faithfulness_score": faithfulness.faithfulness_score,
-        "items_proposed": faithfulness.items_proposed,
-    }, default=str))
+    print(
+        json.dumps(
+            {
+                "run_id": result.run_id,
+                "output": str(Path(output_dir) / result.run_id),
+                "hard_fail": result.hard_fail,
+                "faithfulness_score": faithfulness.faithfulness_score,
+                "items_proposed": faithfulness.items_proposed,
+            },
+            default=str,
+        )
+    )
 
     if result.hard_fail:
         sys.exit(1)
@@ -186,7 +195,12 @@ def _run_score(args: argparse.Namespace) -> None:
     labels_data = json.loads(Path(labels_path).read_text(encoding="utf-8"))
     labels = Labels.model_validate(labels_data)
 
-    faithfulness = compute_faithfulness(report.items, labels.items, fuzzy=args.fuzzy, nli=args.nli)
+    faithfulness = compute_faithfulness(
+        report.items,
+        labels.items,
+        fuzzy=args.fuzzy,
+        nli=args.nli,
+    )
     print(json.dumps(faithfulness.model_dump(mode="json"), default=str))
 
 
