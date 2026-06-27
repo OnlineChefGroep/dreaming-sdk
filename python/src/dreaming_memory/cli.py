@@ -55,8 +55,8 @@ def _doctor() -> None:
             conn.execute("SELECT 1")
         memory.store.close()
         print('{"postgres": "ok"}')
-    except psycopg.Error as exc:
-        print(json.dumps({"postgres": "error", "detail": str(exc)}))
+    except psycopg.Error:
+        print('{"postgres": "error", "detail": "connection failed"}')
 
     if config.linear_api_key:
         try:
@@ -65,8 +65,8 @@ def _doctor() -> None:
             client = LinearClient(api_key=config.linear_api_key)
             client.gql("query { viewer { id } }")
             print('{"linear": "ok"}')
-        except httpx.HTTPError as exc:
-            print(json.dumps({"linear": "error", "detail": str(exc)}))
+        except httpx.HTTPError:
+            print('{"linear": "error", "detail": "connection failed"}')
     else:
         print('{"linear": "missing_api_key"}')
 
@@ -77,8 +77,8 @@ def _doctor() -> None:
 
             NotionMemoryBridge(AgentMemoryStore(config.database_url))
             print('{"notion": "wired"}')
-        except httpx.HTTPError as exc:
-            print(json.dumps({"notion": "error", "detail": str(exc)}))
+        except httpx.HTTPError:
+            print('{"notion": "error", "detail": "connection failed"}')
     else:
         print('{"notion": "missing_api_key"}')
 

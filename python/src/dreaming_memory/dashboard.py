@@ -138,8 +138,8 @@ if FastAPI is not None:
         try:
             _get_store().metrics(days=1)
             return JSONResponse({"status": "ok", "config": cfg.status()})
-        except Exception as exc:  # noqa: BLE001
-            return JSONResponse({"status": "error", "detail": str(exc)}, status_code=500)
+        except Exception:  # noqa: BLE001
+            return JSONResponse({"status": "error", "detail": "metrics unavailable"}, status_code=500)
 else:  # pragma: no cover
     app = None  # type: ignore[assignment]
 

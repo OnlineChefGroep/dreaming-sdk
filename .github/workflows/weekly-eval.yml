@@ -5,6 +5,9 @@ on:
     - cron: '0 9 * * 1'  # Mondays at 09:00 UTC
   workflow_dispatch:       # allow manual trigger
 
+permissions:
+  contents: read
+
 jobs:
   dream-eval:
     runs-on: ubuntu-latest
