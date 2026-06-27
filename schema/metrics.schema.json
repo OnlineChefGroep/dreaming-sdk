@@ -2,19 +2,43 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Dream Metrics",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
-    "faithfulness": { "type": "number", "minimum": 0, "maximum": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "date": { "type": "string", "format": "date-time" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "mode": { "enum": ["golden", "live"] },
+    "sessions_evaluated": { "type": "integer", "minimum": 0 },
+    "items_proposed": { "type": "integer", "minimum": 0 },
+    "accepted": { "type": "integer", "minimum": 0 },
+    "rejected": { "type": "integer", "minimum": 0 },
+    "edited": { "type": "integer", "minimum": 0 },
+    "deferred": { "type": "integer", "minimum": 0 },
+    "rolled_back": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "acceptance_rate": {
+      "type": "object",
+      "additionalProperties": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+    },
     "precision": { "type": "number", "minimum": 0, "maximum": 1 },
     "recall": { "type": "number", "minimum": 0, "maximum": 1 },
-    "acceptance_rate": { "type": "number", "minimum": 0, "maximum": 1 },
-    "regret_rate": { "type": "number", "minimum": 0, "maximum": 1 },
-    "soul_version": { "type": "string" },
-    "run_id": { "type": "string" },
-    "timestamp": { "type": "string", "format": "date-time" },
+    "recurrence_calibration": { "type": "number", "minimum": 0, "maximum": 1 },
+    "faithfulness_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "faithfulness": { "type": "number", "minimum": 0, "maximum": 1 },
+    "secret_leak_test": { "enum": ["pass", "fail", "warn", "skip"] },
     "gates": {
       "type": "object",
       "additionalProperties": { "type": "boolean" }
-    }
+    },
+    "hard_fail": { "type": "boolean" },
+    "regret_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "token_cost": { "type": "integer", "minimum": 0 },
+    "latency": { "type": "number", "minimum": 0 },
+    "soul_version": { "type": ["string", "null"] },
+    "agents_md_hash_before": { "type": ["string", "null"] },
+    "agents_md_hash_after": { "type": ["string", "null"] }
   },
-  "required": ["faithfulness", "run_id"]
+  "required": ["run_id", "faithfulness_score"]
 }
