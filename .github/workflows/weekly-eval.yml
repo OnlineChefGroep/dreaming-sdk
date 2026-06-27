@@ -46,11 +46,11 @@ jobs:
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: |
-          if [ -d "$HOME/.cursor/plugins/local/dreaming" ]; then
-            node --experimental-strip-types sdk/run-dream-cloud.ts --cloud
-          else
-            echo "::notice::dreaming plugin not present; skipping cloud eval (validation above already ran)"
+          if [ ! -d "$HOME/.cursor/plugins/local/dreaming" ]; then
+            echo "::error::dreaming plugin not present; scheduled/manual eval cannot prove the cloud path"
+            exit 1
           fi
+          node --experimental-strip-types sdk/run-dream-cloud.ts --cloud
 
       - name: Upload artifacts
         if: always()
