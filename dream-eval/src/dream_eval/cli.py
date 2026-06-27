@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from dream_eval.types import EvalMode, EvalReport, EvalResult, Labels
@@ -152,7 +152,7 @@ def _run_eval(args: argparse.Namespace) -> None:
             f"{faithfulness.faithfulness_score:.3f} < {args.threshold:.3f}"
         )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     result = EvalResult(
         run_id=now.strftime("%Y-%m-%dT%H-%M-%SZ"),
         date=now,
