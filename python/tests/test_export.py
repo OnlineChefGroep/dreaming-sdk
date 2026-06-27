@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from cursor_dreaming_memory.cli import render_export_markdown
-from cursor_dreaming_memory.types import MemoryRecord, MemorySource, MemoryType, SessionType
+from dreaming_memory.cli import render_export_markdown
+from dreaming_memory.types import MemoryRecord, MemorySource, MemoryType, SessionType
 
 
 def _record() -> MemoryRecord:

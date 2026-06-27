@@ -86,7 +86,7 @@ Written to `eval/results/<run_id>/metrics.json` at eval loop Step 4.
 |-----|--------------|
 | `2026-06-15T07-17-00Z` | **0.63** |
 
-Alert if week-over-week faithfulness drops by > 0.10.
+**Target:** **0.75** — alert if week-over-week faithfulness drops by > 0.10.
 
 ---
 

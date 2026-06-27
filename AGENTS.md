@@ -56,14 +56,23 @@ reproducible across platforms:
 ## Python memory extension (`python/`)
 
 - Backed by a **Postgres SSOT** (single source of truth).
+- Package name: `dreaming-memory` (v0.2.0).
 - Uses **`uv`** for dependency management.
 - Always run `uv sync --extra dev` before running tests, lint, or the CLI (the dev
   tooling — `pytest`, `ruff` — lives in the `dev` **extra**, not a `--dev` group).
 - All memory records must be **JSON-serializable**.
 
+## Dream-eval framework (`dream-eval/`)
+
+- Standalone faithfulness evaluation framework.
+- Package name: `dream-eval` (v0.2.0).
+- Scoring modes: exact (default), fuzzy (difflib), NLI (HHEM-2.1-Open).
+- CLI: `dream-eval run/gates/score/list/show`
+- MCP server: `dream-eval-mcp`
+
 ## Quality & evaluation
 
-- Faithfulness baseline is **0.63** (as of 2026-06-15). Treat regressions below
+- Faithfulness baseline is **0.75** (as of 2026-06-26). Treat regressions below
   this baseline as a quality alarm.
 - Deterministic gates (`secret_leak`, `hash_determinism`) are **hard stops** — if
   either fails the eval must stop and report prominently; do not proceed.

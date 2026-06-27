@@ -1,61 +1,90 @@
-name: Release Artifacts
+name: Release
 
 on:
   push:
     tags:
-      - "v*.*.*"
-  workflow_dispatch:
-
-permissions:
-  contents: read
+      - 'v*'
 
 jobs:
-  build-artifacts:
-    name: Build release artifacts
+  build:
+    name: Build packages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
       - name: Install uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Install Python dependencies
-        run: cd python && uv sync --extra dev
+      - name: Build dream-eval
+        run: cd dream-eval && uv build
 
-      - name: Run quality gate
-        run: |
-          npm run ci
-          cd python
-          uv run ruff check .
-          uv run pytest -q
-
-      - name: Build Python package
+      - name: Build dreaming-memory
         run: cd python && uv build
 
-      - name: Build npm tarball
-        run: npm pack --dry-run
-
-      - name: Upload Python distribution
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: python-dist
-          path: python/dist/*
+          name: packages
+          path: |
+            dream-eval/dist/
+            python/dist/
 
-      - name: Upload npm package summary
-        uses: actions/upload-artifact@v4
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/p/dream-eval
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: npm-package-manifest
-          path: package.json
+          name: packages
+          path: dist/
+
+      - name: Publish dream-eval
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/dream-eval/dist/
+
+      - name: Publish dreaming-memory
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/python/dist/
+
+  github-release:
+    name: Create GitHub Release
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: dist/
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/dream-eval/dist/*.whl
+            dist/dream-eval/dist/*.tar.gz
+            dist/python/dist/*.whl
+            dist/python/dist/*.tar.gz

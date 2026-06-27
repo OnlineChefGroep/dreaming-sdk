@@ -52,6 +52,7 @@ Full schema: [skills-bundle/shared/metrics-schema.md](../skills-bundle/shared/me
 | Run ID | Date | Faithfulness | Notes |
 |--------|------|--------------|-------|
 | `2026-06-15T07-17-00Z` | 2026-06-15 | **0.63** | First full golden pass after v3 refactor |
+| `target` | — | **0.75** | Quality gate target — drift below this triggers alert |
 
 **Alert threshold:** week-over-week faithfulness drop > **0.10**.
 
@@ -118,7 +119,7 @@ All other tests (`index_schema_conformance`, `decisions_schema_conformance`) war
 ## Quality workflow
 
 1. **Weekly:** Cursor Automation runs `dream-eval-loop` (Mon 09:00).
-2. **Compare:** `faithfulness_score` vs baseline 0.63; alert on Δ > 0.10 down.
+2. **Compare:** `faithfulness_score` vs target 0.75; alert on Δ > 0.10 down.
 3. **Inspect flags:** Recurrence violations, specificity, redundancy in `summary.md`.
 4. **If hard_fail:** Fix deterministic issue before tuning prompts.
 5. **If faithfulness drift only:** Check known weaknesses above before changing soul or corpus.
@@ -133,3 +134,4 @@ All other tests (`index_schema_conformance`, `decisions_schema_conformance`) war
 | Evaluator output spec | `reference/dream-evaluator-output-spec.md` |
 | Metrics schema | [skills-bundle/shared/metrics-schema.md](../skills-bundle/shared/metrics-schema.md) |
 | CLI contract | [skills-bundle/shared/cli-contract.md](../skills-bundle/shared/cli-contract.md) |
+| dream-eval package | [dream-eval/](../dream-eval/) — standalone agent-agnostic scoring + gates |

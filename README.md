@@ -22,10 +22,11 @@ Exportable orchestration patterns, automation templates, multi-agent skill bundl
 
 | In this repo | In the plugin (local install) |
 |--------------|-------------------------------|
-| Automation prefill JSON | `cli/dream.mjs`, deterministic tests |
-| Multi-agent skills bundle | Golden corpus, soul snapshot, schemas |
-| Integration docs | Subagents (evaluator, judge, curator) |
-| MIT LICENSE | Hooks, live `~/.cursor/dreaming/` state |
+| **`dream-eval/`** — standalone faithfulness evaluation framework | `cli/dream.mjs`, deterministic tests |
+| Automation prefill JSON | Golden corpus, soul snapshot, schemas |
+| Multi-agent skills bundle | Subagents (evaluator, judge, curator) |
+| Integration docs | Hooks, live `~/.cursor/dreaming/` state |
+| MIT LICENSE | |
 
 ---
 
@@ -140,7 +141,9 @@ make check
 
 Each eval run writes canonical `metrics.json` (25 keys) — faithfulness, precision/recall, acceptance/regret, soul_version, gate results.
 
-**Latest baseline:** run `2026-06-15T07-17-00Z`, faithfulness **0.63**. Known limitation: recurrence inflation on 3 items — see [docs/eval-quality.md](./docs/eval-quality.md).
+**Latest baseline:** run `2026-06-15T07-17-00Z`, faithfulness **0.63**. **Target:** **0.75** — see [docs/eval-quality.md](./docs/eval-quality.md).
+
+**dream-eval package:** `pip install dream-eval` — standalone scoring + gates, works with any memory backend.
 
 ---
 
@@ -158,6 +161,12 @@ cursor-dreaming-sdk/
 │   ├── multi-agent.md
 │   ├── eval-quality.md
 │   └── operations.md
+├── dream-eval/               ← standalone faithfulness evaluation framework
+│   ├── src/dream_eval/       ← scoring, gates, backends, CLI, MCP server
+│   ├── tests/
+│   ├── .claude-plugin/       ← Agent Skills distribution
+│   ├── .codex-plugin/
+│   └── .cursor-plugin/
 ├── python/                   ← agent memory extension (Postgres + Linear/Notion)
 │   ├── src/cursor_dreaming_memory/
 │   ├── examples/
@@ -181,6 +190,7 @@ cursor-dreaming-sdk/
 |-------|-------------|--------|
 | 0 | Docs + automation JSON + skills bundle (this repo) | ✅ Done |
 | 0.5 | **Agent memory** (`python/`) — Postgres SSOT, Linear/Notion, optional LanceDB — [docs/agent-memory.md](./docs/agent-memory.md) | ✅ Done |
+| 0.75 | **dream-eval** (`dream-eval/`) — standalone faithfulness evaluation framework, MCP server, Agent Skills plugins | ✅ Done |
 | 1 | **npm `@onlinechefgroep/dream-cli`** — unified CLI + schema validation | ✅ Done |
 | 2 | **GitHub Actions** — weekly golden evaluation + Slack/Notion reporting | ✅ Done |
 | 3 | **Webhook API** — `POST /v1/dream/eval` + orchestration via MCP | 📅 Planned |

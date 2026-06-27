@@ -1,0 +1,32 @@
+{
+  "name": "dream-eval",
+  "version": "0.1.0",
+  "description": "Agent-agnostic faithfulness evaluation for agent memory — scoring, deterministic gates, and metrics.",
+  "author": "OnlineChefGroep",
+  "license": "MIT",
+  "skills": [
+    {
+      "name": "dream-eval",
+      "description": "Faithfulness evaluation pipeline for agent memory quality scoring",
+      "trigger": "Apply the dream-eval skill to score agent memory faithfulness",
+      "entry_point": "SKILL.md"
+    }
+  ],
+  "tools": [
+    {
+      "name": "dream_score",
+      "description": "Score evaluator output against golden corpus labels",
+      "command": "uvx dream-eval score"
+    },
+    {
+      "name": "dream_check_secrets",
+      "description": "Check text for leaked secrets",
+      "command": "uvx dream-eval gates --text"
+    },
+    {
+      "name": "dream_check_hash",
+      "description": "Verify content produces a deterministic hash",
+      "command": "uvx dream-eval gates --file"
+    }
+  ]
+}

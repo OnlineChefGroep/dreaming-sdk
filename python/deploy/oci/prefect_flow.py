@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import os
 
-from cursor_dreaming_memory import AgentMemory, SessionContext
-from cursor_dreaming_memory.types import SessionType
+from dreaming_memory import AgentMemory, SessionContext
+from dreaming_memory.types import SessionType
 
 
 def sync_linear_issues() -> int:
@@ -38,7 +38,7 @@ def sync_linear_issues() -> int:
 
 def run_auto_triage() -> int:
     """Auto-triage untriaged Linear issues. Set TRIAGE_APPLY=1 to write back."""
-    from cursor_dreaming_memory.triage import AutoTriage
+    from dreaming_memory.triage import AutoTriage
 
     apply = os.environ.get("TRIAGE_APPLY", "0") == "1"
     state = os.environ.get("TRIAGE_STATE") or None

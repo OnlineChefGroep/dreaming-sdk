@@ -11,8 +11,8 @@ from __future__ import annotations
 import argparse
 import os
 
-from cursor_dreaming_memory import AgentMemory, SessionContext
-from cursor_dreaming_memory.types import MemorySource, MemoryType
+from dreaming_memory import AgentMemory, SessionContext
+from dreaming_memory.types import MemorySource, MemoryType
 
 
 def main() -> None:

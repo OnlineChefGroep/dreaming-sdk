@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from cursor_dreaming_memory.integrations.slack import SlackClient
+from dreaming_memory.integrations.slack import SlackClient
 
 
 class _FakeResponse:
@@ -29,7 +29,7 @@ def test_report_eval_result_posts_with_webhook(monkeypatch: pytest.MonkeyPatch) 
         captured["timeout"] = timeout
         return _FakeResponse()
 
-    monkeypatch.setattr("cursor_dreaming_memory.integrations.slack.httpx.post", fake_post)
+    monkeypatch.setattr("dreaming_memory.integrations.slack.httpx.post", fake_post)
 
     client = SlackClient(webhook_url="https://hooks.slack.test/xyz")
     result = client.report_eval_result({"faithfulness_score": 0.8}, run_id="run-1")
@@ -61,7 +61,7 @@ def test_report_eval_result_warning_emoji(monkeypatch: pytest.MonkeyPatch) -> No
         captured["json"] = json
         return _FakeResponse()
 
-    monkeypatch.setattr("cursor_dreaming_memory.integrations.slack.httpx.post", fake_post)
+    monkeypatch.setattr("dreaming_memory.integrations.slack.httpx.post", fake_post)
 
     client = SlackClient(webhook_url="https://hooks.slack.test/xyz")
     assert client.report_eval_result({"faithfulness": 0.3}) is True
