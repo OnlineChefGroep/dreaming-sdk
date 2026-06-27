@@ -1,4 +1,4 @@
-# cursor-dreaming-sdk
+# dreaming-sdk
 
 [![CI](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/codeql.yml/badge.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/codeql.yml)
@@ -6,221 +6,198 @@
 [![PyPI dream-eval](https://img.shields.io/pypi/v/dream-eval.svg)](https://pypi.org/project/dream-eval/)
 [![PyPI dreaming-memory](https://img.shields.io/pypi/v/dreaming-memory.svg)](https://pypi.org/project/dreaming-memory/)
 
-**Integration kit for the Cursor dreaming plugin eval loop.**
+**Agent-agnostic faithfulness evaluation framework for agent memory quality scoring.**
 
-Exportable orchestration patterns, automation templates, multi-agent skill bundles, and documentation so Cursor IDE, `@cursor/sdk`, OpenCode/Codex, Claude, Grok/Factory, and CI/webhook consumers can run the same dream-eval pipeline without forking the plugin.
+Two Python packages for evaluating and storing agent memory:
 
-> **Plugin required:** Install the dreaming plugin at `~/.cursor/plugins/local/dreaming/`. This repo does not replace it — it documents and wires how to call it.
-
-**Full documentation:** see [`docs/`](./docs/) (mirrored from [utrecht-data-os `docs/ops/dreaming/`](https://github.com/OnlineChefGroep/utrecht-data-os/tree/main/docs/ops/dreaming)).
-
-**Contributors:** start with [CONTRIBUTING.md](./CONTRIBUTING.md), then run
-`make check` before opening a PR.
-
----
-
-## What this repo is
-
-| In this repo | In the plugin (local install) |
-|--------------|-------------------------------|
-| **`dream-eval/`** — standalone faithfulness evaluation framework | `cli/dream.mjs`, deterministic tests |
-| Automation prefill JSON | Golden corpus, soul snapshot, schemas |
-| Multi-agent skills bundle | Subagents (evaluator, judge, curator) |
-| Integration docs | Hooks, live `~/.cursor/dreaming/` state |
-| MIT LICENSE | |
+- **`dream-eval`** — standalone faithfulness evaluation (scoring, gates, MCP server)
+- **`dreaming-memory`** — Postgres-backed agent memory with integrations
 
 ---
 
 ## Quick start
 
-### 1. Verify plugin
+### Install
 
 ```bash
-node bin/dream.js doctor
+# dream-eval (evaluation framework)
+pip install dream-eval
+
+# dreaming-memory (agent memory storage)
+pip install dreaming-memory
+
+# Or both
+pip install dream-eval dreaming-memory
 ```
 
-The CLI auto-detects the plugin at `~/.cursor/plugins/local/dreaming/`. If present, it
-reports the plugin root and version; if absent, it falls back to local TUI mode.
+### Evaluate faithfulness
 
-### 2. Run the TUI (interactive)
+```python
+from dream_eval.scoring import compute_faithfulness
+from dream_eval.types import ProposedItem, LabeledItem
+
+proposed = [
+    ProposedItem(id="pref-1", category="pref", content={"key": "dark_mode"}),
+    ProposedItem(id="rule-1", category="rule", content={"key": "no_secrets"}),
+]
+labels = [
+    LabeledItem(id="pref-1", category="pref", content={"key": "dark_mode"}),
+    LabeledItem(id="rule-1", category="rule", content={"key": "no_secrets"}),
+]
+
+report = compute_faithfulness(proposed, labels)
+print(f"Faithfulness: {report.faithfulness_score}")
+```
+
+### CLI
 
 ```bash
-node bin/dream.js tui
+# Run deterministic gates
+dream-eval gates --text "output to check"
+
+# Score an eval report
+dream-eval score --report eval/results/run-1/eval-report.json
+
+# List recent runs
+dream-eval list --limit 10
 ```
 
-Use arrow keys or `j`/`k` to navigate, `/` to fuzzy-filter, `Enter` to run a command.
+---
 
-### 3. Install eval skills (Codex example)
+## What's in this repo
 
-```powershell
-.\skills-bundle\install-dream-skills.ps1 -Platform codex -Target C:\path\to\your-repo
-```
+| Package | Description | PyPI |
+|---------|-------------|------|
+| `dream-eval/` | Faithfulness scoring, deterministic gates, MCP server | [dream-eval](https://pypi.org/project/dream-eval/) |
+| `python/` | Agent memory with Postgres, Linear, Notion integrations | [dreaming-memory](https://pypi.org/project/dreaming-memory/) |
+| `eval/` | Golden corpus + soul snapshot for evaluation | — |
+| `skills-bundle/` | Multi-agent skill definitions | — |
+| `.github/` | CI/CD workflows | — |
 
-Then prompt: **"Apply the dream-eval-loop skill to run one golden corpus evaluation pass."**
+---
 
-### 4. Cursor Automation (weekly eval)
+## dream-eval
 
-1. Open Cursor → Automations → New.
-2. Prefill from `automations/dream_eval_weekly.json` (or MCP `open_automation`).
-3. Cron: Monday 09:00 — prompt applies `dream-eval-loop` skill.
-4. Artifacts: `eval/results/<run_id>/metrics.json` + `summary.md`.
+Standalone faithfulness evaluation framework. Works with any memory backend.
 
-### 5. Cursor SDK (cloud)
+### Features
+
+- **Scoring modes:** exact (fast), fuzzy (difflib), NLI (HHEM-2.1-Open)
+- **Deterministic gates:** secret_leak, hash_determinism
+- **Backends:** JsonFile, Postgres
+- **MCP server:** Claude/Copilot/etc integration
+- **Agent Skills:** `.claude-plugin`, `.codex-plugin`, `.cursor-plugin`
+
+### Install extras
 
 ```bash
-export CURSOR_API_KEY="cursor_..."
-node --experimental-strip-types sdk/run-dream-cloud.ts
+pip install dream-eval           # Core
+pip install dream-eval[nli]      # + NLI verification
+pip install dream-eval[postgres] # + Postgres backend
+pip install dream-eval[mcp]      # + MCP server
 ```
 
-Cloud mode requires committed eval inputs in the target repo — see [docs/sdk-integration.md](./docs/sdk-integration.md).
-
 ---
 
-## Multi-agent install paths
+## dreaming-memory
 
-| Platform | Path | Install flag |
-|----------|------|--------------|
-| Cursor | `~/.cursor/skills/dream-eval-loop/` | `-Platform cursor -Global` |
-| Claude | `.claude/skills/dream-eval-loop/` | `-Platform claude` |
-| Codex | `.agents/skills/dream-eval-loop/` | `-Platform codex` |
-| OpenCode | `.opencode/skills/dream-eval-loop/` | `-Platform opencode` |
-| Grok/Factory | `.factory/skills/dream-eval-loop/` | `-Platform grok` |
+Agent memory extension with Postgres SSOT.
 
-Details: [docs/multi-agent.md](./docs/multi-agent.md) · [skills-bundle/README.md](./skills-bundle/README.md)
+### Features
 
----
+- **Postgres-backed storage** with connection pooling
+- **Linear/Notion/Cloudflare integrations**
+- **Dashboard** with metrics
+- **CLI** for all operations
 
-## CLI surface
+### Quick start
 
-```text
-dream doctor        # inspect plugin and runtime
-dream tui           # interactive terminal (human mode)
-dream agent --json  # machine-readable agent envelope
-dream run           # test → eval → decisions flow
-dream test          # deterministic gates (hard_fail stops eval)
-dream eval          # prepare eval/results/<run_id>/
-dream status        # pending session counts (live loop only)
-dream scope         # in-scope pending list
-dream decisions     # acceptance/regret from W1 log
-dream index         # index summary
-dream cloud         # run SDK cloud wrapper
+```python
+from dreaming_memory import AgentMemory, SessionContext
+from dreaming_memory.types import MemoryType, MemorySource
+
+with AgentMemory() as memory:
+    memory.ensure_schema()
+    ctx = SessionContext.for_dream_eval("run-001")
+    memory.remember(ctx, MemoryType.OBSERVATION, {"key": "value"})
 ```
 
-All commands support `--json`. Spec: [skills-bundle/shared/cli-contract.md](./skills-bundle/shared/cli-contract.md).
-
 ---
 
-## Automations included
+## Golden corpus
 
-| File | Schedule | Purpose |
-|------|----------|---------|
-| `automations/dream_eval_weekly.json` | Mon 09:00 | Golden corpus eval, faithfulness gate |
-| `automations/dream_nightly_dryrun.json` | Daily 00:00 | Dry-run if pending ≥ 5 |
+The `eval/` directory contains resources for faithfulness evaluation:
 
----
+- `eval/golden-corpus/` — labeled transcripts for scoring
+- `eval/soul-snapshot.md` — pinned evaluation lens
+- `eval/results/` — evaluation run outputs
 
-## Open-source operations
-
-| Area | File |
-|------|------|
-| Contributor quickstart | [docs/quickstart.md](./docs/quickstart.md) |
-| Maintainer guide | [docs/maintainer-guide.md](./docs/maintainer-guide.md) |
-| Release process | [docs/release-process.md](./docs/release-process.md) |
-| OSS readiness checklist | [docs/oss-readiness.md](./docs/oss-readiness.md) |
-| Security policy | [SECURITY.md](./SECURITY.md) |
-| Contribution guide | [CONTRIBUTING.md](./CONTRIBUTING.md) |
-
-Local quality gate:
+### Run evaluation
 
 ```bash
-make check
+cd dream-eval
+uv run dream-eval gates --text "$(cat eval/golden-corpus/transcripts/*.jsonl)"
+uv run dream-eval score --report report.json --labels eval/golden-corpus/labels.json
 ```
 
 ---
 
-## Metrics baseline
+## Multi-agent install
 
-Each eval run writes canonical `metrics.json` (25 keys) — faithfulness, precision/recall, acceptance/regret, soul_version, gate results.
+Agent Skills for cross-agent adoption:
 
-**Latest baseline:** run `2026-06-15T07-17-00Z`, faithfulness **0.63**. **Target:** **0.75** — see [docs/eval-quality.md](./docs/eval-quality.md).
+| Platform | Plugin |
+|----------|--------|
+| Claude | `.claude-plugin/` |
+| Codex | `.codex-plugin/` |
+| Cursor | `.cursor-plugin/` |
 
-**dream-eval package:** `pip install dream-eval` — standalone scoring + gates, works with any memory backend.
+---
+
+## Development
+
+```bash
+# Clone
+git clone https://github.com/OnlineChefGroep/dreaming-sdk.git
+cd dreaming-sdk
+
+# Setup dream-eval
+cd dream-eval && uv sync --extra dev
+
+# Setup dreaming-memory
+cd python && uv sync --extra dev
+
+# Run tests
+cd dream-eval && uv run pytest -q
+cd python && uv run pytest -q
+```
 
 ---
 
 ## Repo layout
 
 ```text
-cursor-dreaming-sdk/
-├── README.md                 ← this file
-├── LICENSE                   ← MIT
-├── CONTRIBUTING.md           ← contributor guide
-├── SECURITY.md               ← vulnerability reporting
-├── CODE_OF_CONDUCT.md        ← community standards
-├── docs/
-│   ├── architecture.md
-│   ├── agent-memory.md
-│   ├── sdk-integration.md
-│   ├── multi-agent.md
-│   ├── eval-quality.md
-│   └── operations.md
-├── dream-eval/               ← standalone faithfulness evaluation framework
-│   ├── src/dream_eval/       ← scoring, gates, backends, CLI, MCP server
-│   ├── tests/                ← 132 tests, 94% coverage
-│   ├── .claude-plugin/       ← Agent Skills distribution
-│   ├── .codex-plugin/
-│   └── .cursor-plugin/
-├── python/                   ← agent memory extension (Postgres + Linear/Notion)
+dreaming-sdk/
+├── README.md
+├── LICENSE (MIT)
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── eval/
+│   ├── golden-corpus/    ← labeled transcripts
+│   ├── soul-snapshot.md  ← evaluation lens
+│   └── results/         ← eval outputs
+├── dream-eval/           ← faithfulness evaluation
+│   ├── src/dream_eval/
+│   ├── tests/
+│   └── .claude-plugin/
+├── python/               ← agent memory
 │   ├── src/dreaming_memory/
-│   ├── examples/
-│   ├── deploy/oci/
-│   └── tests/                ← 87 tests, 67% coverage
-├── automations/
-│   ├── dream_eval_weekly.json
-│   └── dream_nightly_dryrun.json
-├── .github/
-│   ├── workflows/            ← CI + release
-│   ├── ISSUE_TEMPLATE/
-│   └── PULL_REQUEST_TEMPLATE.md
-└── skills-bundle/
-    ├── install-dream-skills.ps1
-    ├── install-dream-skills.sh
-    ├── cursor/ · claude/ · codex/ · opencode/ · grok/
-    └── shared/
+│   └── tests/
+├── skills-bundle/        ← multi-agent skills
+└── .github/workflows/    ← CI/CD
 ```
 
 ---
-
-## Phases
-
-| Phase | Deliverable | Status |
-|-------|-------------|--------|
-| 0 | Docs + automation JSON + skills bundle (this repo) | ✅ Done |
-| 0.5 | **Agent memory** (`python/`) — Postgres SSOT, Linear/Notion, optional LanceDB — [docs/agent-memory.md](./docs/agent-memory.md) | ✅ Done |
-| 0.75 | **dream-eval** (`dream-eval/`) — standalone faithfulness evaluation framework, MCP server, Agent Skills plugins | ✅ Done |
-| 1 | **npm `@onlinechefgroep/dream-cli`** — unified CLI + schema validation | ✅ Done |
-| 2 | **GitHub Actions** — weekly golden evaluation + Slack/Notion reporting | ✅ Done |
-| 3 | **Webhook API** — `POST /v1/dream/eval` + orchestration via MCP | 📅 Planned |
-| 4 | **Soul Evolution** — automatic `soul.md` refinement based on acceptance rates | 📅 Planned |
-| 5 | **Fleet Orchestration** — centralized dream-eval across multiple agent nodes | 📅 Planned |
-
-> CI runs lint + tests on every push/PR (workflow [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)); the weekly golden eval runs via [`.github/workflows/weekly-eval.yml`](./.github/workflows/weekly-eval.yml).
-
----
-
-## Paths & safety
-
-- **Global state:** `~/.cursor/dreaming/` — index, decision log, dream reports
-- **Plugin:** `~/.cursor/plugins/local/dreaming/` — CLI, eval corpus, schemas
-- **Eval output:** `eval/results/<run_id>/` only — never mutates live memory
-
-Do not commit secrets, PII transcripts, or live decision logs.
-
----
-
-## Organization
-
-Maintained by [OnlineChefGroep](https://github.com/OnlineChefGroep).
 
 ## License
 

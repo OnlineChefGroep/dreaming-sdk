@@ -1,0 +1,4 @@
+{"role":"user","content":"Should we use Pydantic for the memory record models?"}
+{"role":"assistant","content":"Yes, Pydantic is the right choice. It provides validation, serialization, and type safety out of the box. For agent memory records that need to be JSON-serializable and validated, Pydantic models are the standard approach in Python. The overhead is minimal compared to the benefits."}
+{"role":"user","content":"What about dataclasses instead?"}
+{"role":"assistant","content":"Dataclasses work for simple cases but lack validation. For agent memory where records come from external sources and need guaranteed structure, Pydantic is better. You get field validation, JSON schema generation, and type coercion automatically."}

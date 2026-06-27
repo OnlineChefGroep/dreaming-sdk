@@ -1,0 +1,54 @@
+{
+  "items": [
+    {
+      "id": "pref-minimal-deps",
+      "category": "pref",
+      "content": {
+        "key": "prefer-minimal-dependencies",
+        "value": "true"
+      },
+      "max_recurrence": 5
+    },
+    {
+      "id": "rule-no-secrets",
+      "category": "rule",
+      "content": {
+        "key": "never-commit-secrets",
+        "value": "true"
+      }
+    },
+    {
+      "id": "fact-py311",
+      "category": "fact",
+      "content": {
+        "key": "minimum-python-version",
+        "value": "3.11"
+      }
+    },
+    {
+      "id": "pref-type-safety",
+      "category": "pref",
+      "content": {
+        "key": "prefer-strict-typing",
+        "value": "true"
+      },
+      "max_recurrence": 3
+    },
+    {
+      "id": "rule-test-before-commit",
+      "category": "rule",
+      "content": {
+        "key": "run-tests-before-commit",
+        "value": "true"
+      }
+    }
+  ],
+  "secret_leak": {
+    "forbidden": [
+      "sk-[a-zA-Z0-9]{20,}",
+      "ghp_[a-zA-Z0-9]{36}",
+      "xox[bps]-[a-zA-Z0-9]{10,}",
+      "password\\s*=\\s*['\"][^'\"]+['\"]"
+    ]
+  }
+}

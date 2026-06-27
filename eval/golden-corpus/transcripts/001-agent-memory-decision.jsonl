@@ -1,0 +1,4 @@
+{"role":"user","content":"I need to decide on the database choice for agent memory. Options are SQLite, Postgres, or in-memory."}
+{"role":"assistant","content":"For agent memory, I recommend Postgres. It provides ACID compliance, JSONB support for flexible schemas, and connection pooling for concurrent access. SQLite works for single-agent but doesn't scale. In-memory loses data on restart. Postgres is the right choice for production agent memory."}
+{"role":"user","content":"What about the dependency size? psycopg is pretty heavy."}
+{"role":"assistant","content":"psycopg[binary] is about 5MB installed. For a production agent memory system, this is acceptable. The alternative is writing a custom adapter, which is more maintenance burden. The dependency is worth it for the reliability and features you get."}

@@ -1,6 +1,6 @@
 # Dreaming architecture — deep dive
 
-This document describes the persistent state model, schemas, hashing rules, and subagent boundaries for the dreaming plugin. The plugin root is `~/.cursor/plugins/local/dreaming/`; live state lives under `~/.cursor/dreaming/` unless a repo-local override exists.
+This document describes the persistent state model, schemas, hashing rules, and subagent boundaries for the dreaming evaluation framework.
 
 ---
 
@@ -8,8 +8,8 @@ This document describes the persistent state model, schemas, hashing rules, and 
 
 1. **Soul is the evaluation lens, not config.** `soul.md` shapes how the evaluator interprets recurrence and signal — it is never passed to the judge or curator.
 2. **Readonly vs write is fixed.** Evaluator and judge are readonly. Curator is write-only and consumes approved action blocks.
-3. **Eval is measurement-only.** Golden eval writes exclusively to `eval/results/<run_id>/`. No `AGENTS.md` or live index mutation.
-4. **Deterministic work is code.** Hashing, schema validation, secret-leak gates, and decision aggregation run in `cli/dream.mjs` — not LLM subagents.
+3. **Eval is measurement-only.** Golden eval writes exclusively to `eval/results/<run_id>/`. No live state mutation.
+4. **Deterministic work is code.** Hashing, schema validation, secret-leak gates, and decision aggregation run in the dream-eval CLI — not LLM subagents.
 5. **Session identity is stable.** Canonical hashing (strip BOM, CRLF→LF, SHA-256) ensures the same transcript hashes identically on Windows and Unix.
 
 ---

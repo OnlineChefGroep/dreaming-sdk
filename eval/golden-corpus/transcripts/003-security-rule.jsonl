@@ -1,0 +1,4 @@
+{"role":"user","content":"How should we handle API keys in the codebase?"}
+{"role":"assistant","content":"Never commit API keys or secrets to the repository. Use environment variables or a .env file (which should be in .gitignore). The code should read from os.environ and fail fast if required secrets are missing. This is a hard rule that applies to all code in the repo."}
+{"role":"user","content":"What about the .env.example file?"}
+{"role":"assistant","content":"Include a .env.example with placeholder values. This shows developers what environment variables are needed without exposing real secrets. The .env file itself should never be committed. This is standard practice for any project that uses environment-based configuration."}
