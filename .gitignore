@@ -39,3 +39,4 @@ eval/results/
 
 # Live dreaming state (never commit).
 .cursor/dreaming/
+dream-eval/eval/results/
