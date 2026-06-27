@@ -1,5 +1,11 @@
 # dream-eval
 
+[![PyPI version](https://img.shields.io/pypi/v/dream-eval.svg)](https://pypi.org/project/dream-eval/)
+[![Python](https://img.shields.io/pypi/pyversions/dream-eval.svg)](https://pypi.org/project/dream-eval/)
+[![License](https://img.shields.io/pypi/l/dream-eval.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/blob/main/dream-eval/LICENSE)
+[![Tests](https://img.shields.io/badge/tests-132%20passing-brightgreen)](https://github.com/OnlineChefGroep/dreaming-sdk/actions)
+[![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen)](https://github.com/OnlineChefGroep/dreaming-sdk)
+
 Agent-agnostic faithfulness evaluation framework for agent memory quality scoring.
 
 ## What it does
@@ -16,12 +22,21 @@ This pattern is unique in the agent memory space — no competitor (mem0, Cognee
 
 ```bash
 pip install dream-eval
+
+# With NLI claim verification (HHEM-2.1-Open)
+pip install dream-eval[nli]
+
+# With Postgres backend
+pip install dream-eval[postgres]
+
+# With MCP server
+pip install dream-eval[mcp]
 ```
 
 ## Quick start
 
 ```python
-from dream_eval import compute_faithfulness
+from dream_eval.scoring import compute_faithfulness
 from dream_eval.types import ProposedItem, LabeledItem
 
 proposed = [
@@ -37,17 +52,31 @@ report = compute_faithfulness(proposed, labels)
 print(f"Faithfulness: {report.faithfulness_score}")
 ```
 
+### Fuzzy matching
+
+```python
+# Handles inflection, case differences, minor rewording
+report = compute_faithfulness(proposed, labels, fuzzy=True, threshold=0.85)
+```
+
+### NLI verification
+
+```python
+# Uses HHEM-2.1-Open for semantic similarity (requires dream-eval[nli])
+report = compute_faithfulness(proposed, labels, nli=True)
+```
+
 ## CLI
 
 ```bash
-# Score evaluator report against labels
-dream-eval score --report report.json --labels labels.json
-
 # Run deterministic gates
-dream-eval gate --labels labels.json --output evaluator_output.txt
+dream-eval gates --text "output to check" --file input.txt
 
-# Export to metrics.json format
-dream-eval export --input eval_result.json --output metrics.json
+# Score an eval report
+dream-eval score --report eval/results/run-1/eval-report.json
+
+# List recent runs
+dream-eval list --limit 10
 ```
 
 ## Deterministic gates
@@ -57,28 +86,39 @@ These fail the eval regardless of LLM scores:
 - **secret_leak** — checks for forbidden patterns (API keys, tokens, passwords)
 - **hash_determinism** — verifies BOM/CRLF normalization produces stable hashes
 
+## MCP server
+
+```bash
+# Run as MCP server
+dream-eval-mcp
+```
+
+Exposes tools: `dream_score`, `dream_check_secrets`, `dream_check_hash`, `dream_metrics_schema`.
+
 ## Memory backend adapter
 
-dream-eval works with any memory backend via `BaseMemoryBackend`:
+dream-eval works with any memory backend via `MemoryBackend`:
 
 ```python
-from dream_eval.adapter import BaseMemoryBackend
+from dream_eval.backends import MemoryBackend
 
-class MyBackend(BaseMemoryBackend):
-    def read_transcripts(self, corpus_path=None):
-        # Read from your storage
+class MyBackend(MemoryBackend):
+    def load_eval_report(self, run_id):
         ...
 
-    def read_labels(self, labels_path=None):
-        # Read ground truth labels
+    def load_labels(self, corpus_path=None):
         ...
 
-    def write_eval_result(self, result):
-        # Write evaluation results
+    def save_eval_result(self, result):
+        ...
+
+    def list_runs(self, limit=50):
         ...
 ```
 
-Built-in `DictMemoryBackend` for testing.
+Built-in backends:
+- `JsonFileBackend` — reads/writes to `eval/results/<run_id>/`
+- `PostgresBackend` — stores in `agent_memory` table alongside other memory records
 
 ## Architecture
 
@@ -89,9 +129,12 @@ dream-eval/
 │   ├── types.py         # Pydantic models (EvalResult, FaithfulnessReport, etc.)
 │   ├── scoring.py       # Faithfulness, precision, recall algorithms
 │   ├── gates.py         # Deterministic gates (secret_leak, hash_determinism)
-│   ├── adapter.py       # Abstract BaseMemoryBackend + DictMemoryBackend
+│   ├── backends.py      # MemoryBackend ABC + JsonFileBackend
+│   ├── backends_pg.py   # PostgresBackend
+│   ├── nli.py           # NLI claim verification (HHEM-2.1-Open)
+│   ├── mcp/server.py    # MCP server for Claude/Copilot/etc
 │   └── cli.py           # CLI entry point
-└── tests/               # Test suite
+└── tests/               # 132 tests, 94% coverage
 ```
 
 ## License
