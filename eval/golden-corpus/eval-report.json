@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "id": "pref-minimal-deps",
+      "category": "pref",
+      "content": { "key": "prefer-minimal-dependencies", "value": "true" },
+      "recurrence": 3,
+      "confidence": 1.0
+    },
+    {
+      "id": "fact-py311",
+      "category": "fact",
+      "content": { "key": "minimum-python-version", "value": "3.11" },
+      "recurrence": 1,
+      "confidence": 1.0
+    },
+    {
+      "id": "pref-type-safety",
+      "category": "pref",
+      "content": { "key": "prefer-strict-typing", "value": "true" },
+      "recurrence": 2,
+      "confidence": 1.0
+    },
+    {
+      "id": "rule-test-before-commit",
+      "category": "rule",
+      "content": { "key": "run-tests-before-commit", "value": "true" },
+      "recurrence": 1,
+      "confidence": 1.0
+    }
+  ],
+  "sessions_evaluated": 1,
+  "token_cost": 0,
+  "latency": 0.0,
+  "evaluator_version": "golden-fixture-v1"
+}
