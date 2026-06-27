@@ -37,6 +37,7 @@ foreach ($p in $Platforms) {
         if (-not (Test-Path $src)) { continue }  # platform does not ship this skill
         $dst = Join-Path (Get-SkillBase $p) $s
         New-Item -ItemType Directory -Force -Path (Split-Path $dst) | Out-Null
+        if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
         Copy-Item -Recurse -Force $src $dst
         Write-Host "Installed $p/$s -> $dst"
     }
@@ -44,10 +45,9 @@ foreach ($p in $Platforms) {
 
 # Copy shared docs next to target for reference
 $SharedDst = Join-Path $Target "docs\ops\dreaming\skills-bundle\shared"
-if (-not (Test-Path $SharedDst)) {
-    New-Item -ItemType Directory -Force -Path $SharedDst | Out-Null
-    Copy-Item -Recurse -Force (Join-Path $BundleRoot "shared\*") $SharedDst
-    Write-Host "Copied shared/ -> $SharedDst"
-}
+New-Item -ItemType Directory -Force -Path $SharedDst | Out-Null
+Get-ChildItem -Force $SharedDst | Remove-Item -Recurse -Force
+Copy-Item -Recurse -Force (Join-Path $BundleRoot "shared\*") $SharedDst
+Write-Host "Copied shared/ -> $SharedDst"
 
 Write-Host "Done. Verify: node $PluginCli test --json"
