@@ -6,9 +6,10 @@ project, run the checks, and submit changes.
 
 ## Project overview
 
-This repository is an integration kit: orchestration patterns, automation
-templates, multi-agent skill bundles, documentation, and a Python "agent memory"
-extension under [`python/`](./python/).
+This repository is an integration kit with two Python packages:
+
+- **`dream-eval/`** — standalone faithfulness evaluation framework (PyPI: `dream-eval`)
+- **`python/`** — agent memory extension with Postgres SSOT (PyPI: `dreaming-memory`)
 
 - Start with the [README](./README.md) for the high-level picture.
 - Read the [`docs/`](./docs/) directory for architecture, SDK integration,
@@ -18,40 +19,46 @@ extension under [`python/`](./python/).
 
 ## Prerequisites
 
-- **Node.js** >= 20
 - **Python** 3.11+
 - **[uv](https://docs.astral.sh/uv/)** for Python dependency management
 
-## Setting up the Python package
+## Setting up the Python packages
 
-The Python agent-memory extension lives in [`python/`](./python/) and is managed
-with `uv`:
+### dream-eval
+
+```bash
+cd dream-eval
+uv sync --extra dev
+```
+
+### dreaming-memory
 
 ```bash
 cd python
 uv sync --extra dev
 ```
 
-This installs the runtime dependencies plus the `dev` extra (pytest, ruff).
-
-You can also use the repository-level helper:
-
-```bash
-make setup
-```
-
 ### Running tests
 
 ```bash
-cd python
-uv run pytest -q
+# dream-eval
+cd dream-eval && uv run pytest -q
+
+# dreaming-memory
+cd python && uv run pytest -q
+
+# Both packages
+cd dream-eval && uv run pytest -q && cd ../python && uv run pytest -q
 ```
 
 ### Running lint
 
 ```bash
-cd python
-uv run ruff check .
+# dream-eval
+cd dream-eval && uv run ruff check src/ tests/
+
+# dreaming-memory
+cd python && uv run ruff check src/ tests/
 ```
 
 Both must pass before a change is ready for review. CI runs the same commands

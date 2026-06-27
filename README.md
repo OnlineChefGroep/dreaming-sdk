@@ -1,9 +1,10 @@
 # cursor-dreaming-sdk
 
-[![CI](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/codeql.yml/badge.svg)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/codeql.yml)
-[![Weekly Dream Eval](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/weekly-eval.yml/badge.svg)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/weekly-eval.yml)
+[![CI](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/codeql.yml/badge.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![PyPI dream-eval](https://img.shields.io/pypi/v/dream-eval.svg)](https://pypi.org/project/dream-eval/)
+[![PyPI dreaming-memory](https://img.shields.io/pypi/v/dreaming-memory.svg)](https://pypi.org/project/dreaming-memory/)
 
 **Integration kit for the Cursor dreaming plugin eval loop.**
 
@@ -13,7 +14,7 @@ Exportable orchestration patterns, automation templates, multi-agent skill bundl
 
 **Full documentation:** see [`docs/`](./docs/) (mirrored from [utrecht-data-os `docs/ops/dreaming/`](https://github.com/OnlineChefGroep/utrecht-data-os/tree/main/docs/ops/dreaming)).
 
-**Contributors:** start with [docs/quickstart.md](./docs/quickstart.md), then run
+**Contributors:** start with [CONTRIBUTING.md](./CONTRIBUTING.md), then run
 `make check` before opening a PR.
 
 ---
@@ -153,28 +154,34 @@ Each eval run writes canonical `metrics.json` (25 keys) — faithfulness, precis
 cursor-dreaming-sdk/
 ├── README.md                 ← this file
 ├── LICENSE                   ← MIT
+├── CONTRIBUTING.md           ← contributor guide
+├── SECURITY.md               ← vulnerability reporting
+├── CODE_OF_CONDUCT.md        ← community standards
 ├── docs/
-│   ├── README.md             ← system overview + architecture diagram
 │   ├── architecture.md
-│   ├── agent-memory.md       ← CHEF-308 memory layer
+│   ├── agent-memory.md
 │   ├── sdk-integration.md
 │   ├── multi-agent.md
 │   ├── eval-quality.md
 │   └── operations.md
 ├── dream-eval/               ← standalone faithfulness evaluation framework
 │   ├── src/dream_eval/       ← scoring, gates, backends, CLI, MCP server
-│   ├── tests/
+│   ├── tests/                ← 132 tests, 94% coverage
 │   ├── .claude-plugin/       ← Agent Skills distribution
 │   ├── .codex-plugin/
 │   └── .cursor-plugin/
 ├── python/                   ← agent memory extension (Postgres + Linear/Notion)
-│   ├── src/cursor_dreaming_memory/
+│   ├── src/dreaming_memory/
 │   ├── examples/
 │   ├── deploy/oci/
-│   └── tests/
+│   └── tests/                ← 87 tests, 67% coverage
 ├── automations/
 │   ├── dream_eval_weekly.json
 │   └── dream_nightly_dryrun.json
+├── .github/
+│   ├── workflows/            ← CI + release
+│   ├── ISSUE_TEMPLATE/
+│   └── PULL_REQUEST_TEMPLATE.md
 └── skills-bundle/
     ├── install-dream-skills.ps1
     ├── install-dream-skills.sh
