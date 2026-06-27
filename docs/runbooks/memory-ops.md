@@ -2,25 +2,28 @@
 
 ## Architecture (deployed)
 
-```
-sofie (dev/orchestration)
-   │  Tailscale
+```text
+<dev-orchestration-host>
+   │  private mesh network
    ▼
-bc-scan-arm  ── Docker ── agent-memory-pg (Postgres 16, port 5432)
-   │                       volume: agent_memory_pg
-   ├── qdrant / weaviate (existing vector services)
-   └── llama.cpp (existing inference)
+<agent-memory-host> ── Docker ── agent-memory-pg (Postgres 16, port 5432)
+   │                         volume: agent_memory_pg
+   ├── vector services
+   └── local inference services
 ```
 
-DSN (Tailscale): `postgresql://agentmem:***@100.68.121.19:5432/agent_memory`
+DSN template: `postgresql://agentmem:***@<private-host-or-ip>:5432/agent_memory`
+
+Keep concrete hostnames, private IPs, tailnet names, and credentials in the private ops repo or
+runtime env files only.
 
 ## Common tasks
 
 ### Health check
 
 ```bash
-ssh bc-scan-arm 'docker exec agent-memory-pg pg_isready -U agentmem'
-uv run python -c "from cursor_dreaming_memory import AgentMemory; print(AgentMemory(enable_sentry=False).config.redacted())"
+ssh <agent-memory-host> 'docker exec agent-memory-pg pg_isready -U agentmem'
+uv run python -c "from dreaming_memory import AgentMemory; print(AgentMemory(enable_sentry=False).config.redacted())"
 ```
 
 ### Apply / migrate schema
@@ -32,14 +35,14 @@ uv run dream-memory init
 ### Inspect data
 
 ```bash
-ssh bc-scan-arm "docker exec agent-memory-pg psql -U agentmem -d agent_memory -c \
+ssh <agent-memory-host> "docker exec agent-memory-pg psql -U agentmem -d agent_memory -c \
   'SELECT session_type, source, count(*) FROM agent_memory GROUP BY 1,2 ORDER BY 3 DESC;'"
 ```
 
 ### Backup
 
 ```bash
-ssh bc-scan-arm 'docker exec agent-memory-pg pg_dump -U agentmem agent_memory | gzip' \
+ssh <agent-memory-host> 'docker exec agent-memory-pg pg_dump -U agentmem agent_memory | gzip' \
   > backups/agent_memory_$(date +%F).sql.gz
 ```
 
@@ -47,29 +50,29 @@ ssh bc-scan-arm 'docker exec agent-memory-pg pg_dump -U agentmem agent_memory | 
 
 ```bash
 gunzip -c backups/agent_memory_YYYY-MM-DD.sql.gz | \
-  ssh bc-scan-arm 'docker exec -i agent-memory-pg psql -U agentmem -d agent_memory'
+  ssh <agent-memory-host> 'docker exec -i agent-memory-pg psql -U agentmem -d agent_memory'
 ```
 
 ### Rotate Postgres password
 
 ```bash
 NEW=$(openssl rand -hex 24)
-ssh bc-scan-arm "docker exec agent-memory-pg psql -U agentmem -d agent_memory -c \"ALTER USER agentmem PASSWORD '$NEW';\""
-# update ~/.openclaude/.env AGENT_MEMORY_DATABASE_URL then re-run sync-env.sh
+ssh <agent-memory-host> "docker exec agent-memory-pg psql -U agentmem -d agent_memory -c \"ALTER USER agentmem PASSWORD '$NEW';\""
+# update AGENT_MEMORY_DATABASE_URL in the private env source, then sync runtime env files
 ```
 
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `connection refused` | container down / not on tailnet | `ssh bc-scan-arm 'cd ~/agent-memory && docker compose up -d'` |
-| Notion 401 | token invalid | refresh `NOTION_API_KEY`, re-run `sync-env.sh` |
+| `connection refused` | container down / not on private mesh | `ssh <agent-memory-host> 'cd ~/agent-memory && docker compose up -d'` |
+| Notion 401 | token invalid | refresh `NOTION_API_KEY`, re-run env sync |
 | Notion ingest empty | integration not invited to page | share page with the Notion integration |
 | Linear "team not found" | wrong team key | set `LINEAR_TEAM_KEY=CHEF` |
 | LanceDB disabled | extra not installed | `uv sync --extra semantic` |
 
 ## Security notes
 
-- Postgres binds to `127.0.0.1` + Tailscale IP only (no public exposure).
-- Secrets live in `~/.openclaude/.env` (sofie) and `~/.agent-memory.env` (nodes); never committed.
+- Postgres should bind only to localhost and private mesh addresses, never public interfaces.
+- Secrets live in private runtime env files; never commit concrete credentials or DSNs.
 - R2 / Sentry optional; disabled until tokens provided.
