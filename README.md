@@ -1,4 +1,4 @@
-# cursor-dreaming-sdk
+# dreaming-sdk
 
 [![CI](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/codeql.yml/badge.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/codeql.yml)
@@ -10,12 +10,11 @@
 
 Exportable orchestration patterns, automation templates, multi-agent skill bundles, and documentation so Cursor IDE, `@cursor/sdk`, OpenCode/Codex, Claude, Grok/Factory, and CI/webhook consumers can run the same dream-eval pipeline without forking the plugin.
 
-> **Plugin required:** Install the dreaming plugin at `~/.cursor/plugins/local/dreaming/`. This repo does not replace it — it documents and wires how to call it.
+> **Plugin required for plugin-backed commands:** Install the dreaming plugin at `~/.cursor/plugins/local/dreaming/`. This repo does not replace it — it documents and wires how to call it. The standalone Python packages can run without the Cursor plugin where their inputs are committed or passed explicitly.
 
 **Full documentation:** see [`docs/`](./docs/) (mirrored from [utrecht-data-os `docs/ops/dreaming/`](https://github.com/OnlineChefGroep/utrecht-data-os/tree/main/docs/ops/dreaming)).
 
-**Contributors:** start with [CONTRIBUTING.md](./CONTRIBUTING.md), then run
-`make check` before opening a PR.
+**Contributors:** start with [CONTRIBUTING.md](./CONTRIBUTING.md), then run `make check` before opening a PR.
 
 ---
 
@@ -23,7 +22,7 @@ Exportable orchestration patterns, automation templates, multi-agent skill bundl
 
 | In this repo | In the plugin (local install) |
 |--------------|-------------------------------|
-| **`dream-eval/`** — standalone faithfulness evaluation framework | `cli/dream.mjs`, deterministic tests |
+| **`dream-eval/`** — standalone faithfulness scoring and gates | `cli/dream.mjs`, deterministic plugin tests |
 | Automation prefill JSON | Golden corpus, soul snapshot, schemas |
 | Multi-agent skills bundle | Subagents (evaluator, judge, curator) |
 | Integration docs | Hooks, live `~/.cursor/dreaming/` state |
@@ -39,8 +38,7 @@ Exportable orchestration patterns, automation templates, multi-agent skill bundl
 node bin/dream.js doctor
 ```
 
-The CLI auto-detects the plugin at `~/.cursor/plugins/local/dreaming/`. If present, it
-reports the plugin root and version; if absent, it falls back to local TUI mode.
+The CLI auto-detects the plugin at `~/.cursor/plugins/local/dreaming/`. If present, it reports the plugin root and version; if absent, it falls back to local TUI/agent mode.
 
 ### 2. Run the TUI (interactive)
 
@@ -106,7 +104,7 @@ dream index         # index summary
 dream cloud         # run SDK cloud wrapper
 ```
 
-All commands support `--json`. Spec: [skills-bundle/shared/cli-contract.md](./skills-bundle/shared/cli-contract.md).
+All commands support `--json` where applicable. Spec: [skills-bundle/shared/cli-contract.md](./skills-bundle/shared/cli-contract.md).
 
 ---
 
@@ -140,7 +138,7 @@ make check
 
 ## Metrics baseline
 
-Each eval run writes canonical `metrics.json` (25 keys) — faithfulness, precision/recall, acceptance/regret, soul_version, gate results.
+Each eval run writes canonical `metrics.json` — faithfulness, precision/recall, acceptance/regret, soul_version, gate results.
 
 **Latest baseline:** run `2026-06-15T07-17-00Z`, faithfulness **0.63**. **Target:** **0.75** — see [docs/eval-quality.md](./docs/eval-quality.md).
 
@@ -151,7 +149,7 @@ Each eval run writes canonical `metrics.json` (25 keys) — faithfulness, precis
 ## Repo layout
 
 ```text
-cursor-dreaming-sdk/
+dreaming-sdk/
 ├── README.md                 ← this file
 ├── LICENSE                   ← MIT
 ├── CONTRIBUTING.md           ← contributor guide
@@ -166,15 +164,15 @@ cursor-dreaming-sdk/
 │   └── operations.md
 ├── dream-eval/               ← standalone faithfulness evaluation framework
 │   ├── src/dream_eval/       ← scoring, gates, backends, CLI, MCP server
-│   ├── tests/                ← 132 tests, 94% coverage
-│   ├── .claude-plugin/       ← Agent Skills distribution
+│   ├── tests/
+│   ├── .claude-plugin/
 │   ├── .codex-plugin/
 │   └── .cursor-plugin/
 ├── python/                   ← agent memory extension (Postgres + Linear/Notion)
 │   ├── src/dreaming_memory/
 │   ├── examples/
 │   ├── deploy/oci/
-│   └── tests/                ← 87 tests, 67% coverage
+│   └── tests/
 ├── automations/
 │   ├── dream_eval_weekly.json
 │   └── dream_nightly_dryrun.json
@@ -195,16 +193,16 @@ cursor-dreaming-sdk/
 
 | Phase | Deliverable | Status |
 |-------|-------------|--------|
-| 0 | Docs + automation JSON + skills bundle (this repo) | ✅ Done |
+| 0 | Docs + automation JSON + skills bundle | ✅ Done |
 | 0.5 | **Agent memory** (`python/`) — Postgres SSOT, Linear/Notion, optional LanceDB — [docs/agent-memory.md](./docs/agent-memory.md) | ✅ Done |
-| 0.75 | **dream-eval** (`dream-eval/`) — standalone faithfulness evaluation framework, MCP server, Agent Skills plugins | ✅ Done |
-| 1 | **npm `@onlinechefgroep/dream-cli`** — unified CLI + schema validation | ✅ Done |
-| 2 | **GitHub Actions** — weekly golden evaluation + Slack/Notion reporting | ✅ Done |
+| 0.75 | **dream-eval** (`dream-eval/`) — standalone faithfulness scoring, gates, MCP server, Agent Skills plugins | 🟡 Beta |
+| 1 | **npm `@onlinechefgroep/dream-cli`** — unified CLI + schema validation | 🟡 Beta |
+| 2 | **GitHub Actions** — weekly golden evaluation + Slack/Notion reporting | 🟡 Beta |
 | 3 | **Webhook API** — `POST /v1/dream/eval` + orchestration via MCP | 📅 Planned |
 | 4 | **Soul Evolution** — automatic `soul.md` refinement based on acceptance rates | 📅 Planned |
 | 5 | **Fleet Orchestration** — centralized dream-eval across multiple agent nodes | 📅 Planned |
 
-> CI runs lint + tests on every push/PR (workflow [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)); the weekly golden eval runs via [`.github/workflows/weekly-eval.yml`](./.github/workflows/weekly-eval.yml).
+CI runs lint + tests on every push/PR (workflow [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)); the weekly golden eval runs via [`.github/workflows/weekly-eval.yml`](./.github/workflows/weekly-eval.yml) and fails when the plugin-backed cloud path cannot be proven.
 
 ---
 
