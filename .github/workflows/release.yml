@@ -41,27 +41,27 @@ jobs:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    environment:
-      name: pypi
-      url: https://pypi.org/p/dream-eval
     steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install twine
+        run: pip install twine
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           name: packages
           path: dist/
 
-      - name: Publish dream-eval
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/dream-eval/dist/
-
-      - name: Publish dreaming-memory
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/python/dist/
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          twine upload dist/dream-eval/dist/* dist/python/dist/*
 
   github-release:
     name: Create GitHub Release
