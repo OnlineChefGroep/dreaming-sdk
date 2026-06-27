@@ -28,22 +28,25 @@ jobs:
       - name: Install dream-eval
         run: cd dream-eval && uv sync --extra dev
 
+      - name: Run Python checks
+        run: |
+          cd dream-eval
+          uv run ruff check src/ tests/
+          uv run pytest tests/ -q
+
       - name: Run deterministic gates
         run: |
           cd dream-eval
-          CONTENT=$(cat eval/golden-corpus/transcripts/*.jsonl 2>/dev/null || echo "no transcripts")
-          uv run dream-eval gates --text "$CONTENT"
+          CONTENT=$(cat ../eval/golden-corpus/transcripts/*.jsonl 2>/dev/null || echo "no transcripts")
+          uv run dream-eval gates --labels ../eval/golden-corpus/labels.json --text "$CONTENT"
 
-      - name: Run faithfulness scoring
+      - name: Create scored eval run
         run: |
           cd dream-eval
-          uv run pytest tests/ -q
-
-      - name: Create eval run
-        run: |
-          RUN_ID=$(date -u +%Y-%m-%dT%H-%M-%SZ)
-          mkdir -p eval/results/$RUN_ID
-          echo "{\"run_id\": \"$RUN_ID\", \"mode\": \"golden\", \"status\": \"completed\"}" > eval/results/$RUN_ID/metrics.json
+          uv run dream-eval run \
+            --corpus ../eval/golden-corpus \
+            --output-dir ../eval/results \
+            --threshold 0.75
 
       - name: Upload artifacts
         if: always()
