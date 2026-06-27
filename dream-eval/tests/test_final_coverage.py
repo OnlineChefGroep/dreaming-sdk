@@ -9,13 +9,10 @@ from dream_eval.scoring import compute_faithfulness
 from dream_eval.types import (
     EvalMode,
     EvalResult,
-    FaithfulnessReport,
-    GateResult,
     GateStatus,
     LabeledItem,
     ProposedItem,
 )
-
 
 # --- backends: save + list_runs with non-directory entries ---
 
@@ -53,7 +50,12 @@ def test_render_summary_empty_gates():
 
 def test_run_with_corpus(capsys):
     with tempfile.TemporaryDirectory() as tmpdir:
-        with patch("sys.argv", ["dream-eval", "run", "--corpus", tmpdir, "--output-dir", tmpdir]):
+        labels_path = Path(tmpdir) / "labels.json"
+        labels_path.write_text(json.dumps({"items": []}))
+        with patch("sys.argv", [
+            "dream-eval", "run", "--corpus", tmpdir,
+            "--output-dir", tmpdir, "--threshold", "0",
+        ]):
             from dream_eval.cli import main
             main()
         out = capsys.readouterr().out

@@ -15,7 +15,7 @@ def test_postgres_backend_no_dsn():
         from dream_eval.backends_pg import PostgresEvalBackend
         try:
             PostgresEvalBackend()
-            assert False, "Should have raised ValueError"
+            raise AssertionError("Should have raised ValueError")
         except ValueError as e:
             assert "No database DSN" in str(e)
 

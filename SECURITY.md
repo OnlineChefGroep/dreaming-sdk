@@ -1,6 +1,6 @@
 # Security Policy
 
-We take the security of **cursor-dreaming-sdk** and its users seriously. Thank you for
+We take the security of **dreaming-sdk** and its users seriously. Thank you for
 helping keep the project and its community safe.
 
 ## Supported versions

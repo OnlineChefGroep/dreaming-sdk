@@ -3,7 +3,7 @@ SHELL := /usr/bin/env bash
 .PHONY: help setup lint test check node-check python-build release-dry-run clean
 
 help:
-	@printf "cursor-dreaming-sdk developer commands\n\n"
+	@printf "dreaming-sdk developer commands\n\n"
 	@printf "  make setup          Install Python dev dependencies\n"
 	@printf "  make lint           Run Python and Node lint/syntax checks\n"
 	@printf "  make test           Run Python and Node tests\n"

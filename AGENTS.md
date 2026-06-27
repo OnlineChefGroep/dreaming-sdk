@@ -1,4 +1,4 @@
-# Agent instructions for `cursor-dreaming-sdk`
+# Agent instructions for `dreaming-sdk`
 
 You are working on the **integration kit** for the Cursor dreaming plugin. This
 repository holds exportable orchestration patterns, automation templates,

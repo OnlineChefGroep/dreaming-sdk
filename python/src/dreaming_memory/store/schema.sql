@@ -1,4 +1,4 @@
--- agent_memory: unified insight layer for cursor-dreaming-sdk (CHEF-308)
+-- agent_memory: unified insight layer for dreaming-sdk (CHEF-308)
 -- Postgres remains single source of truth; LanceDB holds optional embedding refs.
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";

@@ -30,7 +30,7 @@ Keys: `AGENT_MEMORY_DATABASE_URL`, `LINEAR_API_KEY`, `NOTION_API_KEY`,
 ## Deploy to all hosts
 
 ```bash
-cd /home/sofie/orgchefgroep/cursor-dreaming-sdk
+cd /home/sofie/orgchefgroep/dreaming-sdk
 for h in bc-monitor bc-scan-arm bc-scan-2; do
   rsync -az --delete python/ "$h:~/cursor-dreaming-memory/"
   ssh "$h" 'bash ~/cursor-dreaming-memory/deploy/fleet/install-memory.sh'

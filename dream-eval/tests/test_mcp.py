@@ -2,7 +2,7 @@
 
 import json
 
-from dream_eval.mcp.server import handle_tool, TOOL_DEFINITIONS, METRICS_SCHEMA
+from dream_eval.mcp.server import METRICS_SCHEMA, TOOL_DEFINITIONS, handle_tool
 
 
 def test_handle_tool_dream_score():

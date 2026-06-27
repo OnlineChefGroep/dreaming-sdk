@@ -3,7 +3,7 @@
 How the dreaming plugin eval loop is consumed by Cursor SDK, OpenCode/Codex, generic HTTP/webhook callers, and future npm packages — without duplicating logic that belongs in the plugin.
 
 **Plugin SSOT:** `~/.cursor/plugins/local/dreaming/`  
-**Integration kit:** [OnlineChefGroep/cursor-dreaming-sdk](https://github.com/OnlineChefGroep/cursor-dreaming-sdk)
+**Integration kit:** [OnlineChefGroep/dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk)
 
 ---
 
@@ -17,7 +17,7 @@ The dreaming plugin is the source of truth for:
 - Skills (`dream-eval`, `dream-eval-loop`, `dreaming`)
 - SDK driver (`sdk/run-dream-cloud.ts`)
 
-The export repo **cursor-dreaming-sdk** holds integration artifacts — automation templates, SDK examples, schema copies, and docs — not a fork of the plugin. Consumers install the plugin locally and use the SDK repo for orchestration patterns.
+The export repo **dreaming-sdk** holds integration artifacts — automation templates, SDK examples, schema copies, and docs — not a fork of the plugin. Consumers install the plugin locally and use the SDK repo for orchestration patterns.
 
 | Layer | Lives in | Exportable? |
 |-------|----------|-------------|
@@ -143,7 +143,7 @@ dreaming plugin (local install, not npm)
 @onlinechefgroep/dream-cli (Phase 1 npm, optional)
         │
         ▼
-cursor-dreaming-sdk repo
+dreaming-sdk repo
   automations/ · sdk/examples · skills-bundle/ · docs/
 ```
 
@@ -159,7 +159,7 @@ cursor-dreaming-sdk repo
 - [x] `cli/dream.mjs` subcommands documented
 - [x] `dream-eval-loop` skill + `automations.json`
 - [x] Live eval baseline (`2026-06-15T07-17-00Z`, faithfulness 0.63)
-- [x] Docs + skills bundle in `cursor-dreaming-sdk`
+- [x] Docs + skills bundle in `dreaming-sdk`
 - [ ] Copy golden corpus subset into SDK repo for cloud CI
 
 ### Phase 1 — npm `@onlinechefgroep/dream-cli`
@@ -214,4 +214,4 @@ Multi-agent distribution phases: [multi-agent.md](./multi-agent.md).
 | SDK driver | `sdk/run-dream-cloud.ts` |
 | Eval loop skill | `~/.cursor/skills/dream-eval-loop/SKILL.md` |
 | Chain reference | [skills-bundle/shared/chain-reference.md](../skills-bundle/shared/chain-reference.md) |
-| Target repo | https://github.com/OnlineChefGroep/cursor-dreaming-sdk |
+| Target repo | https://github.com/OnlineChefGroep/dreaming-sdk |

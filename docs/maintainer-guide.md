@@ -1,10 +1,10 @@
 # Maintainer guide
 
-This guide documents the operating model for maintainers of `cursor-dreaming-sdk`.
+This guide documents the operating model for maintainers of `dreaming-sdk`.
 
 ## Repository contract
 
-`cursor-dreaming-sdk` is an integration kit, not the runtime plugin. Keep that
+`dreaming-sdk` is an integration kit, not the runtime plugin. Keep that
 boundary strict:
 
 - Runtime plugin: `~/.cursor/plugins/local/dreaming/`

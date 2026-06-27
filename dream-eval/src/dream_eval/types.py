@@ -111,21 +111,30 @@ class EvalResult(BaseModel):
     soul_version: str | None = None
     agents_md_hash_before: str | None = None
     agents_md_hash_after: str | None = None
+    sessions_evaluated: int = 0
+    token_cost: int = 0
+    latency: float = 0.0
 
     @property
     def hard_fail(self) -> bool:
         return any(g.status == GateStatus.FAIL for g in self.gates)
 
     def to_metrics_dict(self) -> dict[str, Any]:
-        """Export as 25-key canonical metrics.json format."""
+        """Export as canonical metrics.json format."""
         rolled_back = {
-            "pref": 0, "workflow": 0, "skill": 0, "subagent": 0, "rule": 0
+            "pref": 0,
+            "workflow": 0,
+            "skill": 0,
+            "subagent": 0,
+            "rule": 0,
         }
+        gates = {g.name: g.status.value == "pass" for g in self.gates}
         return {
             "run_id": self.run_id,
             "date": self.date.isoformat(),
+            "timestamp": self.date.isoformat(),
             "mode": self.mode.value,
-            "sessions_evaluated": 0,
+            "sessions_evaluated": self.sessions_evaluated,
             "items_proposed": self.faithfulness.items_proposed,
             "accepted": 0,
             "rejected": 0,
@@ -137,10 +146,13 @@ class EvalResult(BaseModel):
             "recall": self.faithfulness.recall,
             "recurrence_calibration": self.faithfulness.recurrence_calibration,
             "faithfulness_score": self.faithfulness.faithfulness_score,
+            "faithfulness": self.faithfulness.faithfulness_score,
             "secret_leak_test": self._gate_status("secret_leak"),
+            "gates": gates,
+            "hard_fail": self.hard_fail,
             "regret_rate": self.regret_rate,
-            "token_cost": 0,
-            "latency": 0,
+            "token_cost": self.token_cost,
+            "latency": self.latency,
             "soul_version": self.soul_version,
             "agents_md_hash_before": self.agents_md_hash_before,
             "agents_md_hash_after": self.agents_md_hash_after,

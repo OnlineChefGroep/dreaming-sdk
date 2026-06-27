@@ -19,8 +19,8 @@ export PATH="$HOME/.local/bin:$PATH"
 ## 2. Clone and inspect
 
 ```bash
-git clone https://github.com/OnlineChefGroep/cursor-dreaming-sdk.git
-cd cursor-dreaming-sdk
+git clone https://github.com/OnlineChefGroep/dreaming-sdk.git
+cd dreaming-sdk
 ```
 
 Read these before making architectural changes:

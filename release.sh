@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Release script for cursor-dreaming-sdk
+# Release script for dreaming-sdk
 # Usage: ./release.sh <version>
 # Example: ./release.sh 0.2.0
 
@@ -32,4 +32,4 @@ echo "  1. Build packages"
 echo "  2. Publish to PyPI"
 echo "  3. Create GitHub Release"
 echo ""
-echo "Monitor: https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions"
+echo "Monitor: https://github.com/OnlineChefGroep/dreaming-sdk/actions"

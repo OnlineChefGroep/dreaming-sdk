@@ -4,7 +4,7 @@ How **Claude Code**, **Codex/OpenAI**, **OpenCode**, **Grok (Factory)**, and **C
 
 **Runtime SSOT:** `~/.cursor/plugins/local/dreaming/`  
 **Portable skills:** [skills-bundle/](../skills-bundle/)  
-**Integration kit:** [OnlineChefGroep/cursor-dreaming-sdk](https://github.com/OnlineChefGroep/cursor-dreaming-sdk)
+**Integration kit:** [OnlineChefGroep/dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk)
 
 ---
 
@@ -177,7 +177,7 @@ node cli/dream.mjs <command> [--json]
 | Phase | Deliverable | Status |
 |-------|-------------|--------|
 | **0** | CLI + schemas; `skills-bundle/shared/` | Done |
-| **1** | Skill bundle in `cursor-dreaming-sdk` | Done (this publish) |
+| **1** | Skill bundle in `dreaming-sdk` | Done (this publish) |
 | **2** | Install scripts (`install-dream-skills.ps1` / `.sh`) | Done |
 | **3** | MCP wrapper (`dream_test`, `dream_eval`, `dream_decisions`) | Planned |
 
@@ -190,4 +190,4 @@ node cli/dream.mjs <command> [--json]
 | SDK integration | [sdk-integration.md](./sdk-integration.md) |
 | Skill bundle | [skills-bundle/](../skills-bundle/) |
 | Utrecht Codex index pattern | `.agents/skills/00-skills/SKILL.md` |
-| Target repo | https://github.com/OnlineChefGroep/cursor-dreaming-sdk |
+| Target repo | https://github.com/OnlineChefGroep/dreaming-sdk |

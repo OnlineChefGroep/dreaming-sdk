@@ -46,8 +46,11 @@ install_skill() {
     return 0  # this platform does not ship this skill
   fi
   local dst="$(skill_base "$platform")/${skill}"
+  local tmp="${dst}.tmp.$$"
   mkdir -p "$(dirname "$dst")"
-  cp -R "$src" "$dst"
+  cp -R "$src" "$tmp"
+  rm -rf "$dst"
+  mv "$tmp" "$dst"
   echo "Installed ${platform}/${skill} -> $dst"
 }
 
@@ -67,10 +70,11 @@ for p in "${PLATFORMS[@]}"; do
 done
 
 SHARED_DST="${TARGET}/docs/ops/dreaming/skills-bundle/shared"
-if [[ ! -d "$SHARED_DST" ]]; then
-  mkdir -p "$SHARED_DST"
-  cp -R "${BUNDLE_ROOT}/shared/"* "$SHARED_DST/"
-  echo "Copied shared/ -> $SHARED_DST"
-fi
+SHARED_TMP="${SHARED_DST}.tmp.$$"
+mkdir -p "$SHARED_TMP"
+cp -R "${BUNDLE_ROOT}/shared/"* "$SHARED_TMP/"
+rm -rf "${SHARED_DST:?}"
+mv "$SHARED_TMP" "$SHARED_DST"
+echo "Copied shared/ -> $SHARED_DST"
 
 echo "Done. Verify: node $PLUGIN_CLI test --json"
