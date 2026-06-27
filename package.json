@@ -20,7 +20,7 @@
   "author": "OnlineChefGroep",
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "files": [
     "bin/",
