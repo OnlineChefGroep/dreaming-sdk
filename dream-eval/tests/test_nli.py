@@ -19,7 +19,7 @@ def test_verify_claim_import_error():
     with patch.dict(sys.modules, {"transformers": None}):
         try:
             nli_mod._get_model()
-            assert False, "Should have raised ImportError"
+            raise AssertionError("Should have raised ImportError")
         except ImportError as e:
             assert "nli" in str(e)
 

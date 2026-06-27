@@ -7,7 +7,7 @@ to read/write the shared Postgres memory layer.
 
 The host shell sources `~/.agent-memory.env` (provides `AGENT_MEMORY_DATABASE_URL`,
 `LINEAR_API_KEY`, `NOTION_API_KEY`, etc.). Package installed via `uv sync` in
-`cursor-dreaming-sdk/python`.
+`dreaming-sdk/python`.
 
 ## Write a memory
 

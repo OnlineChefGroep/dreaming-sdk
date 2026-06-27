@@ -84,7 +84,7 @@ def _doctor() -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="cursor-dreaming-sdk agent memory CLI")
+    parser = argparse.ArgumentParser(description="dreaming-sdk agent memory CLI")
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("init", help="Apply Postgres schema")

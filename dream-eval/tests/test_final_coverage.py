@@ -9,13 +9,10 @@ from dream_eval.scoring import compute_faithfulness
 from dream_eval.types import (
     EvalMode,
     EvalResult,
-    FaithfulnessReport,
-    GateResult,
     GateStatus,
     LabeledItem,
     ProposedItem,
 )
-
 
 # --- backends: save + list_runs with non-directory entries ---
 

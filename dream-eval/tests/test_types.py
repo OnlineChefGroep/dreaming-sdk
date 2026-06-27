@@ -2,16 +2,15 @@
 
 from dream_eval.types import (
     EvalMode,
-    EvalResult,
     EvalReport,
+    EvalResult,
     FaithfulnessReport,
     GateResult,
     GateStatus,
     ItemOutcome,
-    Labels,
     LabeledItem,
+    Labels,
     ProposedItem,
-    SecretLeakConfig,
 )
 
 

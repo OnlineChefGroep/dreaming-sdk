@@ -1,7 +1,7 @@
 # Agentic Loop Spec — Open-Source Hardening Run
 
 > **Status:** active execution spec for the autonomous run that consolidates the
-> open pull requests and brings `cursor-dreaming-sdk` to an open-source-ready state.
+> open pull requests and brings `dreaming-sdk` to an open-source-ready state.
 >
 > **Mode:** no human in the loop · full access · multiple async subagents · 1 verify agent.
 

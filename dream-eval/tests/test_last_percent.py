@@ -3,7 +3,6 @@
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 from dream_eval.types import (
     EvalMode,
@@ -14,7 +13,6 @@ from dream_eval.types import (
     LabeledItem,
     ProposedItem,
 )
-
 
 # --- backends: save creates metrics.json with proper content ---
 

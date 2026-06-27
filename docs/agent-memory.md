@@ -1,11 +1,11 @@
 # Agent memory layer (CHEF-308)
 
-Lightweight development memory for **cursor-dreaming-sdk**, backed by Postgres with optional LanceDB semantic search. Designed for Oracle Cloud Ampere A1 and future dashboard integration.
+Lightweight development memory for **dreaming-sdk**, backed by Postgres with optional LanceDB semantic search. Designed for Oracle Cloud Ampere A1 and future dashboard integration.
 
 ## Architecture
 
 ```
-cursor-dreaming-sdk session forms
+dreaming-sdk session forms
         │
         ▼
   SessionContext (normalize session_id, session_type, agent_id)
@@ -125,7 +125,7 @@ All records are JSON-serializable via `MemoryRecord.model_dump()`. Query by `ses
 ## Package location
 
 ```
-cursor-dreaming-sdk/python/
+dreaming-sdk/python/
   src/cursor_dreaming_memory/
   examples/linear_memory_flow.py
   deploy/oci/

@@ -1,6 +1,6 @@
 # cursor-dreaming-memory
 
-Lightweight agent memory extension for **cursor-dreaming-sdk** (Utrecht Data OS / CHEF-308).
+Lightweight agent memory extension for **dreaming-sdk** (Utrecht Data OS / CHEF-308).
 
 ## Install
 

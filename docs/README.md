@@ -2,7 +2,7 @@
 
 **Single source of truth for the continual-learning and quality-gate pipeline.**  
 Maintained in [utrecht-data-os](https://github.com/OnlineChefGroep/utrecht-data-os) at `docs/ops/dreaming/`.  
-Published integration kit: [OnlineChefGroep/cursor-dreaming-sdk](https://github.com/OnlineChefGroep/cursor-dreaming-sdk).
+Published integration kit: [OnlineChefGroep/dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk).
 
 ---
 
@@ -123,7 +123,7 @@ Full per-platform matrix: [multi-agent.md](./multi-agent.md) · Install guide: [
 | **Repo-local override (W2)** | `<repo>/.cursor/dreaming/` |
 | **Docs (this tree)** | `docs/ops/dreaming/` |
 | **Skills bundle** | `docs/ops/dreaming/skills-bundle/` |
-| **GitHub integration kit** | https://github.com/OnlineChefGroep/cursor-dreaming-sdk |
+| **GitHub integration kit** | https://github.com/OnlineChefGroep/dreaming-sdk |
 
 **Never commit:** live `dream-index.json`, `dream-decisions.jsonl`, transcripts with PII, or secrets.
 
@@ -154,7 +154,7 @@ Elsewhere: prompt with the trigger text above.
 
 ### 4. Schedule (Cursor)
 
-Open Automations and prefill from `automations/dream_eval_weekly.json` in [cursor-dreaming-sdk](https://github.com/OnlineChefGroep/cursor-dreaming-sdk), or use MCP `open_automation`. Details: [operations.md](./operations.md).
+Open Automations and prefill from `automations/dream_eval_weekly.json` in [dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk), or use MCP `open_automation`. Details: [operations.md](./operations.md).
 
 ---
 
@@ -172,7 +172,7 @@ Open Automations and prefill from `automations/dream_eval_weekly.json` in [curso
 | [maintainer-guide.md](./maintainer-guide.md) | Review, merge, dependency, and incident practices |
 | [release-process.md](./release-process.md) | Release checklist and artifact build flow |
 | [oss-readiness.md](./oss-readiness.md) | Public readiness checklist and remaining decisions |
-| [GITHUB-README.md](./GITHUB-README.md) | README for the cursor-dreaming-sdk repo |
+| [GITHUB-README.md](./GITHUB-README.md) | README for the dreaming-sdk repo |
 | [skills-bundle/](../skills-bundle/) | Portable multi-agent skill scaffold |
 
 ---
@@ -184,7 +184,7 @@ dreaming plugin (local install)
   cli/ · lib/ · skills/ · schema/ · eval/ · hooks/ · sdk/
         │
         ▼ documents + thin wrappers
-cursor-dreaming-sdk (GitHub)
+dreaming-sdk (GitHub)
   docs/ · skills-bundle/ · automations/ · python/ · LICENSE
   bin/dream.js · lib/ · sdk/run-dream-cloud.ts · schema/
         │

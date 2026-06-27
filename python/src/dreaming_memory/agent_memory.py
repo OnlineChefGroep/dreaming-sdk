@@ -18,7 +18,7 @@ from dreaming_memory.types import MemoryRecord, MemorySource, MemoryType, Sessio
 
 class AgentMemory:
     """
-    Main entry point for agent memory within cursor-dreaming-sdk.
+    Main entry point for agent memory within dreaming-sdk.
 
     Usage:
         memory = AgentMemory()

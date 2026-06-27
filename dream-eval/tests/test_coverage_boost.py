@@ -7,17 +7,12 @@ from unittest.mock import MagicMock, patch
 
 from dream_eval.types import (
     EvalMode,
-    EvalReport,
     EvalResult,
-    FaithfulnessReport,
     GateResult,
     GateStatus,
     LabeledItem,
-    Labels,
     ProposedItem,
-    SecretLeakConfig,
 )
-
 
 # --- backends_pg: load_eval_report with data ---
 
@@ -86,9 +81,12 @@ def test_postgres_backend_load_labels_with_file():
 
 def test_postgres_backend_list_runs_with_data():
     mock_conn = MagicMock()
-    mock_conn.execute.return_value.fetchall.return_value = [
-        {"run_id": "r1", "content": {"faithfulness_score": 0.8}, "created_at": MagicMock(isoformat=MagicMock(return_value="2026-01-01"))}
-    ]
+    mock_row = {
+        "run_id": "r1",
+        "content": {"faithfulness_score": 0.8},
+        "created_at": MagicMock(isoformat=MagicMock(return_value="2026-01-01")),
+    }
+    mock_conn.execute.return_value.fetchall.return_value = [mock_row]
     mock_pool = MagicMock()
     mock_pool.connection.return_value.__enter__ = MagicMock(return_value=mock_conn)
     mock_pool.connection.return_value.__exit__ = MagicMock(return_value=False)
@@ -126,7 +124,9 @@ def test_score_with_valid_files(capsys):
         labels_path.write_text(json.dumps({"items": [{"id": "a", "category": "pref"}]}))
 
         from unittest.mock import patch as mp
-        with mp("sys.argv", ["dream-eval", "score", "--report", str(report_path), "--labels", str(labels_path)]):
+
+        args = ["dream-eval", "score", "--report", str(report_path), "--labels", str(labels_path)]
+        with mp("sys.argv", args):
             from dream_eval.cli import main
             main()
 

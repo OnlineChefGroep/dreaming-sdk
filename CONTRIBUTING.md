@@ -1,6 +1,6 @@
-# Contributing to cursor-dreaming-sdk
+# Contributing to dreaming-sdk
 
-Thanks for your interest in improving **cursor-dreaming-sdk** — the integration kit
+Thanks for your interest in improving **dreaming-sdk** — the integration kit
 for the Cursor dreaming plugin eval loop. This guide explains how to set up the
 project, run the checks, and submit changes.
 

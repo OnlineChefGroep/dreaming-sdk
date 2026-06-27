@@ -1,7 +1,6 @@
 """Tests for dream-eval CLI."""
 
 import json
-import os
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
@@ -61,7 +60,7 @@ def test_run_eval_live_mode(capsys):
 
 
 def test_list_empty(capsys):
-    with tempfile.TemporaryDirectory() as tmpdir:
+    with tempfile.TemporaryDirectory():
         with patch("sys.argv", ["dream-eval", "list", "--limit", "5"]):
             # list uses default eval/results dir, just verify no crash
             main()
@@ -79,7 +78,10 @@ def test_list_with_data(capsys):
         }), encoding="utf-8")
 
         # Patch the default path
-        with patch("dream_eval.backends.JsonFileBackend.__init__", lambda self, **kw: setattr(self, "results_dir", Path(tmpdir) / "eval" / "results")):
+        def _init_override(self, **kw):
+            self.results_dir = Path(tmpdir) / "eval" / "results"
+
+        with patch("dream_eval.backends.JsonFileBackend.__init__", _init_override):
             with patch("sys.argv", ["dream-eval", "list", "--limit", "5"]):
                 main()
         out = capsys.readouterr().out
@@ -104,7 +106,10 @@ def test_show_existing(capsys):
             "sessions_evaluated": 3,
         }), encoding="utf-8")
 
-        with patch("dream_eval.backends.JsonFileBackend.__init__", lambda self, **kw: setattr(self, "results_dir", Path(tmpdir) / "eval" / "results")):
+        def _init_override2(self, **kw):
+            self.results_dir = Path(tmpdir) / "eval" / "results"
+
+        with patch("dream_eval.backends.JsonFileBackend.__init__", _init_override2):
             with patch("sys.argv", ["dream-eval", "show", "r1"]):
                 main()
         out = capsys.readouterr().out

@@ -85,7 +85,7 @@ class LinearClient:
         return result["issue"]
 
     def add_comment(self, issue_id: str, body: str) -> dict[str, Any]:
-        normalized = self.normalize_issue_id(issue_id)
+        issue = self.get_issue(issue_id)
         data = self.gql(
             """
             mutation CreateComment($input: CommentCreateInput!) {
@@ -94,7 +94,7 @@ class LinearClient:
               }
             }
             """,
-            {"input": {"issueId": normalized, "body": body}},
+            {"input": {"issueId": issue["id"], "body": body}},
         )
         result = data.get("commentCreate", {})
         if not result.get("success"):

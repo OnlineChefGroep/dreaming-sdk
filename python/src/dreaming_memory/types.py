@@ -1,4 +1,4 @@
-"""Shared types for agent memory — aligned with cursor-dreaming-sdk session forms."""
+"""Shared types for agent memory — aligned with dreaming-sdk session forms."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 
 class SessionType(StrEnum):
-    """Session forms supported by cursor-dreaming-sdk and multi-agent surfaces."""
+    """Session forms supported by dreaming-sdk and multi-agent surfaces."""
 
     CURSOR = "cursor"
     CLAUDE = "claude"

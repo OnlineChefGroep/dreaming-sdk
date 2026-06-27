@@ -17,7 +17,7 @@ On `bc-scan-arm` (`crontab -e`):
 
 ```cron
 # Linear issue sync into agent_memory every hour
-0 * * * * . ~/.agent-memory.env && cd ~/Orgchefgroep/cursor-dreaming-sdk/python && SYNC_ISSUES=CHEF-308,CHEF-330 ~/.local/bin/uv run python deploy/oci/prefect_flow.py >> ~/agent-memory-sync.log 2>&1
+0 * * * * . ~/.agent-memory.env && cd ~/Orgchefgroep/dreaming-sdk/python && SYNC_ISSUES=CHEF-308,CHEF-330 ~/.local/bin/uv run python deploy/oci/prefect_flow.py >> ~/agent-memory-sync.log 2>&1
 ```
 
 ## Option B — systemd timer
@@ -69,6 +69,6 @@ dream-memory remember --session-id "$RUN_ID" --session-type dream_eval \
 ## Verify
 
 ```bash
-ssh bc-scan-arm 'cd ~/Orgchefgroep/cursor-dreaming-sdk/python && uv run dream-memory recall --source linear --limit 5'
+ssh bc-scan-arm 'cd ~/Orgchefgroep/dreaming-sdk/python && uv run dream-memory recall --source linear --limit 5'
 tail -f ~/agent-memory-sync.log   # on bc-scan-arm
 ```

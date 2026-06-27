@@ -144,7 +144,7 @@ Copy-Item -Recurse docs\ops\dreaming\skills-bundle\grok\skills\dream-eval-loop .
 | `shared/cli-contract.md` | `dream.mjs` JSON shapes |
 | `shared/metrics-schema.md` | 25-key metrics.json |
 
-Published copy: [OnlineChefGroep/cursor-dreaming-sdk](https://github.com/OnlineChefGroep/cursor-dreaming-sdk) → `skills-bundle/`.
+Published copy: [OnlineChefGroep/dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk) → `skills-bundle/`.
 
 ---
 
