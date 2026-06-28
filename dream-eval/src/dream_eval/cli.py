@@ -75,8 +75,14 @@ def _load_labels(labels_path: str | None = None, corpus_path: str | None = None)
             print(f"Error: labels file not found: {path}", file=sys.stderr)
             sys.exit(1)
     else:
-        path = Path("eval/golden-corpus/labels.json")
-        if not path.exists():
+        for maybe in [
+            Path("eval/golden-corpus/labels.json"),
+            Path("../eval/golden-corpus/labels.json"),
+        ]:
+            if maybe.exists():
+                path = maybe
+                break
+        else:
             return Labels()
     return Labels.model_validate(json.loads(path.read_text(encoding="utf-8")))
 
@@ -99,6 +105,13 @@ def _load_eval_report(
     if report_path:
         print(f"Error: eval report not found: {report_path}", file=sys.stderr)
         sys.exit(1)
+
+    for fallback in [
+        Path("eval/golden-corpus/eval-report.json"),
+        Path("../eval/golden-corpus/eval-report.json"),
+    ]:
+        if fallback.exists():
+            return EvalReport.model_validate(json.loads(fallback.read_text(encoding="utf-8")))
 
     return EvalReport()
 
