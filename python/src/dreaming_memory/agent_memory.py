@@ -1,4 +1,11 @@
-"""High-level facade for agents — Postgres SSOT + optional semantic + integrations."""
+"""High-level facade for agents — Postgres SSOT + optional semantic + integrations.
+
+Sprint 1 governance methods (CHEF-1004, CHEF-1005, CHEF-1006):
+- propose() — submit a memory with evidence for verification
+- verify() — attach verifier result to a proposed memory
+- curate() — drive the curator decision state machine
+- write_idempotent() — prevent duplicate active memory on re-ingestion
+"""
 
 from __future__ import annotations
 
@@ -13,7 +20,17 @@ from dreaming_memory.observability import sentry
 from dreaming_memory.semantic.lancedb import SemanticMemoryStore
 from dreaming_memory.session import SessionContext
 from dreaming_memory.store.postgres import AgentMemoryStore
-from dreaming_memory.types import MemoryRecord, MemorySource, MemoryType, SessionType
+from dreaming_memory.types import (
+    CURATOR_VALID_TRANSITIONS,
+    CuratorDecision,
+    CuratorState,
+    Evidence,
+    MemoryRecord,
+    MemorySource,
+    MemoryType,
+    SessionType,
+    VerifierResult,
+)
 
 
 class AgentMemory:
@@ -75,6 +92,10 @@ class AgentMemory:
             self._notion = NotionMemoryBridge(self.store)
         return self._notion
 
+    # ------------------------------------------------------------------
+    # Core operations
+    # ------------------------------------------------------------------
+
     def remember(
         self,
         session: SessionContext,
@@ -125,6 +146,141 @@ class AgentMemory:
             session_type=session.session_type,
             limit=limit,
         )
+
+    # ------------------------------------------------------------------
+    # CHEF-1006: Idempotent writes
+    # ------------------------------------------------------------------
+
+    def write_idempotent(
+        self,
+        record: MemoryRecord,
+        *,
+        dedupe_key: str,
+    ) -> MemoryRecord:
+        """Write a memory record only if no active record with the same dedupe_key exists.
+
+        The dedupe_key is stored in metadata["dedupe_key"] and used for lookup.
+        If an active (non-rolled-back) record with the same key exists, returns it
+        instead of creating a duplicate.
+        """
+        existing = self.store.find_active_by_dedupe_key(dedupe_key)
+        if existing is not None:
+            return existing
+        record.metadata["dedupe_key"] = dedupe_key
+        return self.store.write(record)
+
+    # ------------------------------------------------------------------
+    # CHEF-1004: Evidence and verification
+    # ------------------------------------------------------------------
+
+    def propose(
+        self,
+        session: SessionContext,
+        memory_type: MemoryType,
+        content: dict[str, Any],
+        evidence: list[Evidence],
+        *,
+        source: MemorySource = MemorySource.SDK,
+        metadata: dict[str, Any] | None = None,
+    ) -> MemoryRecord:
+        """Propose a memory with evidence for the governance pipeline.
+
+        1. Writes the memory record with metadata["curator.state"] = "proposed"
+        2. Writes evidence rows linked to the memory
+        3. Creates a curator_decision with state=PROPOSED
+        """
+        enriched_meta = {
+            **(session.metadata or {}),
+            **(metadata or {}),
+            "curator.state": CuratorState.PROPOSED.value,
+        }
+        record = MemoryRecord(
+            agent_id=session.agent_id,
+            session_id=session.session_id,
+            session_type=session.session_type,
+            memory_type=memory_type,
+            content=content,
+            source=source,
+            metadata=enriched_meta,
+        )
+        record = self.store.write(record)
+
+        # Persist evidence
+        for ev in evidence:
+            ev.memory_id = record.id
+            self.store.write_evidence(ev)
+
+        # Create initial curator decision
+        decision = CuratorDecision(
+            memory_id=record.id,
+            state=CuratorState.PROPOSED,
+            decided_by=session.agent_id,
+            rationale="Auto-proposed via governance pipeline",
+        )
+        self.store.write_curator_decision(decision)
+
+        return record
+
+    def verify(
+        self,
+        memory_id: UUID,
+        result: VerifierResult,
+    ) -> VerifierResult:
+        """Attach a verifier result to a proposed memory.
+
+        The result must be PASS or PARTIAL for the memory to proceed to curation.
+        """
+        result.memory_id = memory_id
+        return self.store.write_verifier_result(result)
+
+    def curate(
+        self,
+        memory_id: UUID,
+        new_state: CuratorState,
+        *,
+        decided_by: str = "",
+        rationale: str = "",
+    ) -> CuratorDecision:
+        """Drive the curator state machine for a memory.
+
+        Validates the transition is legal, records the transition history,
+        and returns the updated decision.
+        """
+        current = self.store.get_active_curator_decision(memory_id)
+        if current is None:
+            raise ValueError(f"No active curator decision for memory {memory_id}")
+
+        valid_next = CURATOR_VALID_TRANSITIONS.get(current.state, [])
+        if new_state not in valid_next:
+            raise ValueError(
+                f"Invalid transition: {current.state.value} → {new_state.value}. "
+                f"Valid transitions: {[s.value for s in valid_next]}"
+            )
+
+        # Record transition history
+        transition_record = {
+            "from": current.state.value,
+            "to": new_state.value,
+            "at": str(current.decided_at) if current.decided_at else "",
+            "by": decided_by,
+            "rationale": rationale,
+        }
+        transitions = current.transitions + [transition_record]
+
+        updated = CuratorDecision(
+            memory_id=memory_id,
+            state=new_state,
+            decided_by=decided_by,
+            rationale=rationale,
+            previous_state=current.state,
+            transitions=transitions,
+            metadata=current.metadata,
+        )
+        return self.store.update_curator_decision(memory_id, updated)
+
+    # ------------------------------------------------------------------
+    # Semantic operations
+    # ------------------------------------------------------------------
 
     def index_semantic(
         self,
