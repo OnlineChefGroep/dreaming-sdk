@@ -1,0 +1,54 @@
+id: linear_triage-002
+name: "Reject duplicate issue with stale context"
+domain: linear_triage
+version: "1.0"
+tags: [triage, duplicate, stale-state]
+difficulty: hard
+
+input:
+  prompt: "Triage this Linear issue. Check for duplicates before assigning."
+  context:
+    workspace: "chefclawsheesh"
+    existing_issues:
+      - id: "CHEF-892"
+        title: "Memory write idempotency broken on Postgres"
+        status: "done"
+        resolution: "Fixed in Sprint 1 — partial unique index added"
+  payload:
+    issue_title: "Memory records duplicated on re-ingestion"
+    issue_body: |
+      When the same memory is ingested twice, two separate records
+      appear in the database. This causes duplicate entries in search
+      results and inflated trust scores.
+    reporter: "qa-agent"
+    created_at: "2026-07-20T14:00:00Z"
+
+stale_state:
+  description: "CHEF-892 was fixed in Sprint 1 with a partial unique index"
+  outdated_facts:
+    - "Memory writes are not idempotent"
+    - "No deduplication exists"
+
+expected:
+  action: "close_as_duplicate"
+  output_contains:
+    - "CHEF-892"
+    - "duplicate"
+    - "fixed"
+  memory_write:
+    memory_type: "observation"
+    content_keys:
+      - "issue_title"
+      - "duplicate_of"
+      - "resolution"
+    trust_state: "proposed"
+
+forbidden:
+  actions: ["create_new_ticket"]
+  phrases:
+    - "new bug"
+    - "regression"
+    - "unrelated"
+
+difficulty: hard
+weight: 2.0

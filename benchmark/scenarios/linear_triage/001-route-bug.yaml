@@ -1,0 +1,47 @@
+id: linear_triage-001
+name: "Route bug to correct team"
+domain: linear_triage
+version: "1.0"
+tags: [triage, routing]
+difficulty: easy
+
+input:
+  prompt: "Triage this Linear issue. Assign priority, team, and labels."
+  context:
+    workspace: "chefclawsheesh"
+    teams:
+      - name: "platform"
+        repos: ["dreaming-sdk", "dream-eval"]
+      - name: "frontend"
+        repos: ["dashboard", "dream-tui"]
+  payload:
+    issue_title: "Dashboard shows stale trust score after memory write"
+    issue_body: |
+      After writing a memory record via MCP, the dashboard trust score
+      widget still shows the old value. Refreshing the page fixes it.
+      Expected: score updates immediately after write.
+    reporter: "agent-eval"
+    created_at: "2026-07-15T10:30:00Z"
+
+expected:
+  action: "triage"
+  output_contains:
+    - "platform"
+    - "bug"
+  memory_write:
+    memory_type: "observation"
+    content_keys:
+      - "issue_title"
+      - "assigned_team"
+      - "priority"
+    trust_state: "proposed"
+
+forbidden:
+  actions: ["close"]
+  phrases:
+    - "not a bug"
+    - "working as intended"
+    - "duplicate"
+
+difficulty: easy
+weight: 1.0
