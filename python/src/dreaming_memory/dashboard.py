@@ -2,12 +2,16 @@
 
 Serves an auto-refreshing HTML overview plus JSON endpoints, reading from the
 Postgres SSOT. Designed to run as a systemd service on a fleet host (bc-monitor)
-and be viewed any time over Tailscale.
+and be viewed any time over Tailscale or the public internet via Cloudflare Tunnel.
 
 Run:
     uv run --extra web dream-memory serve --host 0.0.0.0 --port 8787
 or:
     uv run uvicorn dreaming_memory.dashboard:app --host 0.0.0.0 --port 8787
+
+Authentication:
+    Protected by Cloudflare Access on the public tunnel endpoint (memory.chefgroep.online).
+    Locally on the fleet host or via Tailscale, it is accessible without additional auth.
 """
 
 from __future__ import annotations
@@ -138,7 +142,7 @@ if FastAPI is not None:
         try:
             _get_store().metrics(days=1)
             return JSONResponse({"status": "ok", "config": cfg.status()})
-        except Exception:  # noqa: BLE001
+        except Exception:
             return JSONResponse({"status": "error", "detail": "metrics unavailable"}, status_code=500)
 else:  # pragma: no cover
     app = None  # type: ignore[assignment]

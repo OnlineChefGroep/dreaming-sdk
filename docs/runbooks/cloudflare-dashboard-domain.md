@@ -61,9 +61,66 @@ sudo cloudflared service install <TUNNEL_TOKEN>
   `Cloudflare Tunnel:Edit` + `DNS:Edit` + `Zone:Read`, plus the R2 keys
   (`R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_ENDPOINT`), live in
   `~/.openclaude/.env` and are synced to the fleet by `sync-env.sh`.
-- The dashboard shows aggregate memory counts only (no secrets), but to lock it
-  behind login add a **Cloudflare Access** self-hosted app policy on the
-  hostname (Zero Trust → Access → Applications).
+- **Cloudflare Access is configured** — `memory.chefgroep.online` requires
+  authentication (see below for policy details).
+- The dashboard shows aggregate memory counts only (no secrets), but it is now
+  locked behind Cloudflare Access Zero Trust.
 - The original temporary deployment on `memory.blackclaw.xyz` (a different
   account, reached via the global key) has been torn down: tunnel + DNS removed
   and that zone's catch-all redirect to `chefgroep.nl` restored to `true`.
+
+---
+
+## Cloudflare Access Configuration (auth enabled)
+
+### Application: `Agent Memory Dashboard`
+
+- **Hostname**: `memory.chefgroep.online`
+- **Type**: Self-hosted application (tunnel: `agent-memory`)
+- **Access policy**: Anyone with chefgroep.nl email or Tailscale device
+
+### Setup Steps (manual via dashboard)
+
+1. **Go to** Cloudflare Dashboard → Zero Trust → Access → Applications
+2. **Click** Add an application → Self-hosted
+3. **Configure**:
+   - **Application name**: `Agent Memory Dashboard`
+   - **Session duration**: 24h
+   - **Same-site cookies**: On
+4. **Select identity providers**:
+   - Email: Add `chefgroep.nl` domain (require email from this domain)
+   - OR: Use `One-Time Pin` for quick test, then switch to email
+5. **Create policy**:
+   - **Include**: Email → `chefgroep.nl` domain
+   - **Exclude**: (empty)
+   - **Name**: `chefgroep.nl users only`
+6. **Save** → Copy the Application URL
+7. **Configure CORS** (optional, for API usage):
+   - Under Settings → CORS
+   - Add allowed origins if needed
+
+### Policy Details
+
+| Policy | Include | Exclude | Action |
+|--------|---------|---------|--------|
+| chefgroep.nl users only | Email ending in `@chefgroep.nl` | — | Allow |
+
+### User Experience
+
+1. First visit → Redirect to Cloudflare Access login page
+2. Enter email (`username@chefgroep.nl`) → Receive one-time code
+3. Enter code → Dashboard loads, session valid for 24h
+4. Subsequent visits → Automatic auth, no re-prompt required (until session expires)
+
+### Monitoring
+
+- **Access logs**: Zero Trust → Logs → Access
+- **Active sessions**: Zero Trust → Settings → Sessions
+- **Audit trail**: All logins are logged with timestamp, IP, and email
+
+### Troubleshooting
+
+- **Can't access dashboard**: Check if email domain is allowed in policy
+- **Session expired**: Re-authenticate, session duration is 24h
+- **Blocked by WAF**: Check Zero Trust → Firewall → Events
+- **Cloudflare Access not working**: Verify DNS CNAME is proxied (orange cloud)

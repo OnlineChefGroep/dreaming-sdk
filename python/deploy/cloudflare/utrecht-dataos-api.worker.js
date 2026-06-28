@@ -43,11 +43,11 @@ async function handle(request) {
 
 async function proxy(target, request) {
   const upstream = await fetch(target, {
-    method: 'GET',
-    headers: { accept: request.headers.get('accept') || '*/*' },
-    redirect: 'follow',
+    method: "GET",
+    headers: { accept: request.headers.get("accept") || "*/*" },
+    redirect: "follow",
   });
-  const ct = upstream.headers.get('content-type') || 'text/html; charset=utf-8';
-  const headers = new Headers({ 'content-type': ct, 'cache-control': 'no-store' });
+  const ct = upstream.headers.get("content-type") || "text/html; charset=utf-8";
+  const headers = new Headers({ "content-type": ct, "cache-control": "no-store" });
   return new Response(upstream.body, { status: upstream.status, headers });
 }
