@@ -41,7 +41,7 @@ All commands support `--json`. Full contract: [skills-bundle/shared/cli-contract
 ## Cursor Automations
 
 Prefill source: `~/.cursor/skills/dream-eval-loop/automations.json`  
-Published copies: [dreaming-sdk/automations/](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/tree/main/automations)
+Published copies: [dreaming-sdk/automations/](https://github.com/OnlineChefGroep/dreaming-sdk/tree/main/automations)
 
 ### dream_eval_weekly
 
@@ -75,7 +75,7 @@ $env:CURSOR_API_KEY = "cursor_..."
 node --experimental-strip-types sdk/run-dream-cloud.ts
 
 # Cloud (repo must commit eval inputs)
-$env:REPO_URL = "https://github.com/OnlineChefGroep/cursor-dreaming-sdk"
+$env:REPO_URL = "https://github.com/OnlineChefGroep/dreaming-sdk"
 node --experimental-strip-types sdk/run-dream-cloud.ts --cloud
 ```
 

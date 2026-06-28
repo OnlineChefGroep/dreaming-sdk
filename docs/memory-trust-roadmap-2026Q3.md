@@ -69,7 +69,7 @@ If they disagree, prefer GitHub for implementation status, then sync Notion and 
 
 ### Partial or risky
 
-- README still contains stale `cursor-dreaming-sdk` badge/clone references. This keeps CHEF-1000 open.
+- README still contains stale `dreaming-sdk` badge/clone references. This keeps CHEF-1000 open.
 - PR is not documentation-only anymore, so review scope must be treated as code + docs + CI.
 - Linear issue states still show Todo/planned even though implementation exists in the PR branch.
 - Mem0 adapter is a skeleton and explicitly raises `NotImplementedError` for live operations.
@@ -122,7 +122,7 @@ Implemented or drafted:
 
 Still required:
 
-- Fix stale `cursor-dreaming-sdk` references.
+- Fix stale `dreaming-sdk` references.
 - Prove fresh-clone quickstart.
 - Fix failing `python` pytest matrix.
 - Fix CodeQL.

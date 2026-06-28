@@ -195,6 +195,18 @@ def _get_store() -> AgentMemoryStore:
 
 def handle_tool(name: str, arguments: dict[str, Any]) -> str:
     """Route MCP tool call to the appropriate function."""
+    known_tools = {
+        "memory_write",
+        "memory_recall",
+        "memory_propose",
+        "memory_verify",
+        "memory_curate",
+        "memory_governance",
+        "memory_metrics",
+    }
+    if name not in known_tools:
+        return json.dumps({"error": f"Unknown tool: {name}"})
+
     store = _get_store()
 
     if name == "memory_write":

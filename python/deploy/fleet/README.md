@@ -61,5 +61,5 @@ via `SessionContext.from_sdk_payload()`.
 ## 5. Verify
 
 ```bash
-ssh bc-scan-arm 'cd ~/cursor-dreaming-sdk/python && uv run dream-memory recall --limit 5'
+ssh bc-scan-arm 'cd ~/dreaming-sdk/python && uv run dream-memory recall --limit 5'
 ```

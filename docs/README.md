@@ -2,7 +2,7 @@
 
 **Single source of truth for the continual-learning and quality-gate pipeline.**  
 Source of truth for integration kit, automations, and Python memory extension.  
-Published at: [OnlineChefGroep/cursor-dreaming-sdk](https://github.com/OnlineChefGroep/cursor-dreaming-sdk).
+Published at: [OnlineChefGroep/dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk).
 
 ---
 
@@ -123,7 +123,7 @@ Full per-platform matrix: [multi-agent.md](./multi-agent.md) · Install guide: [
 | **Repo-local override (W2)** | `<repo>/.cursor/dreaming/` |
 | **Docs (this tree)** | `docs/` |
 | **Skills bundle** | `skills-bundle/` |
-| **GitHub integration kit** | https://github.com/OnlineChefGroep/cursor-dreaming-sdk |
+| **GitHub integration kit** | https://github.com/OnlineChefGroep/dreaming-sdk |
 
 **Never commit:** live `dream-index.json`, `dream-decisions.jsonl`, transcripts with PII, or secrets.
 
@@ -154,7 +154,7 @@ Elsewhere: prompt with the trigger text above.
 
 ### 4. Schedule (Cursor)
 
-Open Automations and prefill from `automations/dream_eval_weekly.json` in [dreaming-sdk](https://github.com/OnlineChefGroep/cursor-dreaming-sdk), or use MCP `open_automation`. Details: [operations.md](./operations.md).
+Open Automations and prefill from `automations/dream_eval_weekly.json` in [dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk), or use MCP `open_automation`. Details: [operations.md](./operations.md).
 
 ---
 

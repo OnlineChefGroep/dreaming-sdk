@@ -9,11 +9,11 @@ set -euo pipefail
 [ -f ~/.agent-memory.env ] && . ~/.agent-memory.env
 command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh
 if [ ! -d ~/dreaming-memory ]; then
-  gh repo clone OnlineChefGroep/cursor-dreaming-sdk ~/cursor-dreaming-sdk 2>/dev/null \
-    || git clone https://github.com/OnlineChefGroep/cursor-dreaming-sdk ~/cursor-dreaming-sdk
-  ln -sf ~/cursor-dreaming-sdk/python ~/dreaming-memory
+  gh repo clone OnlineChefGroep/dreaming-sdk ~/dreaming-sdk 2>/dev/null \
+    || git clone https://github.com/OnlineChefGroep/dreaming-sdk ~/dreaming-sdk
+  ln -sf ~/dreaming-sdk/python ~/dreaming-memory
 fi
-cd ~/cursor-dreaming-sdk/python
+cd ~/dreaming-sdk/python
 git pull --ff-only 2>/dev/null || true
 uv sync
 echo "--- verifying DB link ---"
