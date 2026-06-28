@@ -4,14 +4,14 @@
 #
 # Usage (from sofie control node):
 #   for h in bc-monitor bc-scan-arm bc-scan-2; do
-#     scp -r python "$h:~/cursor-dreaming-memory"
-#     ssh "$h" 'bash ~/cursor-dreaming-memory/deploy/fleet/install-memory.sh'
+#     scp -r python "$h:~/dreaming-memory"
+#     ssh "$h" 'bash ~/dreaming-memory/deploy/fleet/install-memory.sh'
 #   done
 #
 # Secrets are read at runtime from ~/.config/agent-memory/.env on each host.
 set -euo pipefail
 
-REPO_DIR="${REPO_DIR:-$HOME/cursor-dreaming-memory}"
+REPO_DIR="${REPO_DIR:-$HOME/dreaming-memory}"
 ENV_DIR="$HOME/.config/agent-memory"
 ENV_FILE="$ENV_DIR/.env"
 

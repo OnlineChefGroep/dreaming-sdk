@@ -1,0 +1,108 @@
+# dreaming-sdk benchmark scenario schema v1
+# Each scenario is a self-contained agent workflow evaluation case.
+
+$schema: "http://json-schema.org/draft-07/schema#"
+title: BenchmarkScenario
+type: object
+required: [id, name, domain, input]
+properties:
+  id:
+    type: string
+    description: "Unique scenario identifier (e.g. github_pr_review-001)"
+  name:
+    type: string
+    description: "Human-readable scenario name"
+  domain:
+    type: string
+    enum: [github_pr_review, linear_triage, cloudflare_change, notion_update, memory_write, memory_recall]
+    description: "Agent workflow domain"
+  version:
+    type: string
+    default: "1.0"
+  tags:
+    type: array
+    items: { type: string }
+    default: []
+
+  input:
+    type: object
+    description: "What the agent receives as input"
+    properties:
+      prompt:
+        type: string
+        description: "The instruction/task for the agent"
+      context:
+        type: object
+        description: "Background context (repo info, issue history, etc.)"
+      payload:
+        type: object
+        description: "Domain-specific data (PR diff, issue body, config diff, page content)"
+
+  expected:
+    type: object
+    description: "What the agent SHOULD produce"
+    properties:
+      action:
+        type: string
+        description: "Expected action or decision (e.g. 'approve', 'reject', 'escalate')"
+      output_contains:
+        type: array
+        items: { type: string }
+        description: "Phrases that MUST appear in the agent's response"
+      output_not_contains:
+        type: array
+        items: { type: string }
+        description: "Phrases that MUST NOT appear in the agent's response"
+      memory_write:
+        type: object
+        description: "Expected memory record if agent writes to memory"
+        properties:
+          memory_type:
+            type: string
+          content_keys:
+            type: array
+            items: { type: string }
+            description: "Keys that must be present in the memory content"
+          trust_state:
+            type: string
+            enum: [proposed, reviewing, accepted, rejected]
+      evidence_refs:
+        type: array
+        items: { type: string }
+        description: "Evidence sources the agent should reference"
+
+  forbidden:
+    type: object
+    description: "Failure conditions — what MUST NOT happen"
+    properties:
+      actions:
+        type: array
+        items: { type: string }
+        description: "Actions the agent must not take"
+      phrases:
+        type: array
+        items: { type: string }
+        description: "Phrases the agent must not produce"
+      memory_states:
+        type: array
+        items: { type: string }
+        description: "Memory states that must not be set"
+
+  stale_state:
+    type: object
+    description: "Previous context that may confuse the agent"
+    properties:
+      description:
+        type: string
+      outdated_facts:
+        type: array
+        items: { type: string }
+
+  difficulty:
+    type: string
+    enum: [trivial, easy, medium, hard, adversarial]
+    default: medium
+  weight:
+    type: number
+    default: 1.0
+    description: "Weight in aggregate score calculation"

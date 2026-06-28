@@ -31,7 +31,7 @@ class SemanticMemoryStore:
     def _ensure_table(self) -> Any:
         if not self.enabled:
             raise RuntimeError(
-                "lancedb not installed — pip install cursor-dreaming-memory[semantic]"
+                "lancedb not installed — pip install dreaming-memory[semantic]"
             )
         import lancedb
 

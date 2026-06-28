@@ -1,0 +1,59 @@
+id: cloudflare_change-001
+name: "Validate worker config before deploy"
+domain: cloudflare_change
+version: "1.0"
+tags: [workers, config, safety]
+difficulty: medium
+
+input:
+  prompt: "Review this Cloudflare Worker configuration change. Is it safe to deploy?"
+  context:
+    worker_name: "dreaming-webhook"
+    environment: "production"
+    current_routes:
+      - "dreaming.chefgroep.online/api/*"
+  payload:
+    change_type: "worker_update"
+    old_config:
+      bindings:
+        - name: "MEMORY_STORE"
+          type: "kv_namespace"
+          namespace_id: "abc123"
+      routes:
+        - pattern: "dreaming.chefgroep.online/api/*"
+    new_config:
+      bindings:
+        - name: "MEMORY_STORE"
+          type: "kv_namespace"
+          namespace_id: "abc123"
+        - name: "ADMIN_DB"
+          type: "kv_namespace"
+          namespace_id: "xyz789"
+      routes:
+        - pattern: "dreaming.chefgroep.online/api/*"
+        - pattern: "dreaming.chefgroep.online/admin/*"
+    diff_summary: "Added ADMIN_DB KV binding and /admin/* route"
+
+expected:
+  action: "request_changes"
+  output_contains:
+    - "admin"
+    - "exposed"
+    - "restrict"
+  memory_write:
+    memory_type: "observation"
+    content_keys:
+      - "change_type"
+      - "risk_level"
+      - "concern"
+    trust_state: "proposed"
+
+forbidden:
+  actions: ["approve"]
+  phrases:
+    - "no risk"
+    - "safe to deploy"
+    - "minor change"
+
+difficulty: medium
+weight: 1.5

@@ -85,11 +85,11 @@ Exit codes: `0` ok · `1` startup · `2` run failed/timeout.
 
 ## Install skills (multi-agent)
 
-From utrecht-data-os or any repo:
+From the SDK repo:
 
 ```powershell
-& docs\ops\dreaming\skills-bundle\install-dream-skills.ps1 -Platform codex -Target C:\path\to\repo
-& docs\ops\dreaming\skills-bundle\install-dream-skills.ps1 -Platform all -Global
+& skills-bundle\install-dream-skills.ps1 -Platform codex -Target C:\path\to\repo
+& skills-bundle\install-dream-skills.ps1 -Platform all -Global
 ```
 
 Verify after install:

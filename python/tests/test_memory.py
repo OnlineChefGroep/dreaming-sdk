@@ -1,4 +1,4 @@
-"""Unit tests for cursor-dreaming-memory (no external services required)."""
+"""Unit tests for dreaming-memory (no external services required)."""
 
 from __future__ import annotations
 

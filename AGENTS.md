@@ -78,3 +78,9 @@ reproducible across platforms:
   either fails the eval must stop and report prominently; do not proceed.
 - When modifying evaluator prompts, you **MUST** re-run a golden eval pass to check
   for faithfulness drift before merging.
+
+## Sprint status
+
+- **Sprint 0** (Foundation Triage): ✅ Complete — naming, eval persistence, default gates, version sync
+- **Sprint 1** (Memory Governance Core): ✅ Code complete — types, migration, AgentMemory governance methods, 25 tests
+  - Remaining: deploy schema_v4.sql to staging, wire dashboard governance views

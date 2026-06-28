@@ -49,6 +49,7 @@ redis = [
 web = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
+    "slowapi>=0.1.9",
 ]
 prefect = [
     "prefect>=3.0",

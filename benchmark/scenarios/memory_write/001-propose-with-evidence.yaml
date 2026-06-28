@@ -1,0 +1,39 @@
+id: memory_write-001
+name: "Propose memory with evidence"
+domain: memory_write
+version: "1.0"
+tags: [governance, propose]
+difficulty: easy
+
+input:
+  prompt: "Write a memory record from this observation. Include evidence and propose it for review."
+  context:
+    agent_id: "dream-eval"
+    session_id: "eval-run-001"
+  payload:
+    observation: |
+      The dashboard trust score widget updates correctly after memory writes
+      when using the InMemoryAdapter. Postgres adapter shows 200ms latency.
+    source_url: "https://github.com/orgchefgroep/dreaming-sdk/pull/42"
+    evidence_excerpt: "InMemoryAdapter passes all 22 contract tests"
+
+expected:
+  action: "propose"
+  output_contains:
+    - "evidence"
+    - "proposed"
+  memory_write:
+    memory_type: "observation"
+    content_keys:
+      - "observation"
+      - "source_url"
+    trust_state: "proposed"
+  evidence_refs:
+    - "github.com/orgchefgroep/dreaming-sdk/pull/42"
+
+forbidden:
+  actions: ["accept"]
+  memory_states: ["accepted"]
+
+difficulty: easy
+weight: 1.0

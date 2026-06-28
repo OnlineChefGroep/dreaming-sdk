@@ -69,7 +69,7 @@ for p in "${PLATFORMS[@]}"; do
   done
 done
 
-SHARED_DST="${TARGET}/docs/ops/dreaming/skills-bundle/shared"
+SHARED_DST="${TARGET}/skills-bundle/shared"
 SHARED_TMP="${SHARED_DST}.tmp.$$"
 mkdir -p "$SHARED_TMP"
 cp -R "${BUNDLE_ROOT}/shared/"* "$SHARED_TMP/"

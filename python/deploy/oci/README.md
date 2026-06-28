@@ -1,6 +1,6 @@
 # OCI deployment — agent memory on Ampere A1
 
-Deploy the cursor-dreaming-memory layer on Oracle Cloud Free Tier (ARM).
+Deploy the dreaming-memory layer on Oracle Cloud Free Tier (ARM).
 
 ## Prerequisites
 
@@ -29,8 +29,8 @@ oci compute instance launch \
 ## 2. Copy code to instance
 
 ```bash
-rsync -avz python/ ubuntu@<INSTANCE_IP>:~/cursor-dreaming-memory/
-scp .env ubuntu@<INSTANCE_IP>:~/cursor-dreaming-memory/.env
+rsync -avz python/ ubuntu@<INSTANCE_IP>:~/dreaming-memory/
+scp .env ubuntu@<INSTANCE_IP>:~/dreaming-memory/.env
 ```
 
 ## 3. Start Postgres
@@ -38,7 +38,7 @@ scp .env ubuntu@<INSTANCE_IP>:~/cursor-dreaming-memory/.env
 On the instance:
 
 ```bash
-cd ~/cursor-dreaming-memory/deploy/oci
+cd ~/dreaming-memory/deploy/oci
 docker compose up -d
 ```
 
@@ -47,7 +47,7 @@ Postgres listens on `localhost:5432`, database `agent_memory`.
 ## 4. Install Python package
 
 ```bash
-cd ~/cursor-dreaming-memory
+cd ~/dreaming-memory
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
 export AGENT_MEMORY_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/agent_memory
@@ -82,8 +82,8 @@ After=docker.service
 [Service]
 Type=simple
 User=ubuntu
-WorkingDirectory=/home/ubuntu/cursor-dreaming-memory
-EnvironmentFile=/home/ubuntu/cursor-dreaming-memory/.env
+WorkingDirectory=/home/ubuntu/dreaming-memory
+EnvironmentFile=/home/ubuntu/dreaming-memory/.env
 ExecStart=/home/ubuntu/.local/bin/uv run python deploy/oci/prefect_flow.py
 Restart=on-failure
 

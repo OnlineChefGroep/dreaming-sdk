@@ -16,6 +16,13 @@ def test_handle_tool_dream_score():
 
 def test_handle_tool_dream_check_secrets_no_patterns():
     result = json.loads(handle_tool("dream_check_secrets", {"text": "clean"}))
+    assert result["status"] == "pass"
+
+
+def test_handle_tool_dream_check_secrets_explicit_empty_skips():
+    result = json.loads(handle_tool(
+        "dream_check_secrets", {"text": "clean", "forbidden_patterns": []}
+    ))
     assert result["status"] == "skip"
 
 
@@ -72,7 +79,7 @@ def test_tool_definitions_count():
 
 
 def test_metrics_schema_keys():
-    assert len(METRICS_SCHEMA) == 22
+    assert len(METRICS_SCHEMA) == 26
 
 
 def test_handle_tool_dream_score_mismatch():

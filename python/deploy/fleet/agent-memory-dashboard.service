@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=%h/cursor-dreaming-memory
+WorkingDirectory=%h/dreaming-memory
 ExecStart=/bin/bash -lc 'set -a; [ -f %h/.agent-memory.env ] && . %h/.agent-memory.env; set +a; exec %h/.local/bin/uv run dream-memory serve --host 0.0.0.0 --port 8787'
 Restart=on-failure
 RestartSec=5

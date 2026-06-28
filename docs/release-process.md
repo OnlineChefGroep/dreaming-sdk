@@ -3,7 +3,7 @@
 The repository currently ships two surfaces:
 
 1. Root npm package foundation: `@onlinechefgroep/dream-cli`
-2. Python package: `cursor-dreaming-memory`
+2. Python package: `dreaming-memory`
 
 Publishing remains manual until package ownership, trusted publishing, and credentials
 are finalized. The automated release workflow builds artifacts but does not publish.

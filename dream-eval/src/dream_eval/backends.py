@@ -25,8 +25,16 @@ class MemoryBackend(ABC):
         """Load golden corpus labels."""
 
     @abstractmethod
-    def save_eval_result(self, result: EvalResult) -> None:
-        """Persist an eval result (gates + scoring)."""
+    def save_eval_result(
+        self,
+        result: EvalResult,
+        report: EvalReport | None = None,
+    ) -> None:
+        """Persist an eval result (gates + scoring).
+
+        If *report* is provided the backend also persists the evaluator report
+        so it round-trips through `load_eval_report`.
+        """
 
     @abstractmethod
     def list_runs(self, limit: int = 50) -> list[dict[str, Any]]:
@@ -61,7 +69,11 @@ class JsonFileBackend(MemoryBackend):
         data = json.loads(labels_file.read_text(encoding="utf-8"))
         return Labels.model_validate(data)
 
-    def save_eval_result(self, result: EvalResult) -> None:
+    def save_eval_result(
+        self,
+        result: EvalResult,
+        report: EvalReport | None = None,
+    ) -> None:
         import json
 
         out_dir = self.results_dir / result.run_id
@@ -72,6 +84,13 @@ class JsonFileBackend(MemoryBackend):
             json.dumps(result.to_metrics_dict(), indent=2, default=str),
             encoding="utf-8",
         )
+
+        if report is not None:
+            report_path = out_dir / "eval-report.json"
+            report_path.write_text(
+                json.dumps(report.model_dump(mode="json"), indent=2, default=str),
+                encoding="utf-8",
+            )
 
         summary = _render_summary(result)
         summary_path = out_dir / "summary.md"
@@ -118,8 +137,12 @@ class PostgresBackend(MemoryBackend):
     def load_labels(self, corpus_path: str | None = None) -> Labels:
         return self._impl.load_labels(corpus_path)
 
-    def save_eval_result(self, result: EvalResult) -> None:
-        self._impl.save_eval_result(result)
+    def save_eval_result(
+        self,
+        result: EvalResult,
+        report: EvalReport | None = None,
+    ) -> None:
+        self._impl.save_eval_result(result, report)
 
     def list_runs(self, limit: int = 50) -> list[dict[str, Any]]:
         return self._impl.list_runs(limit)

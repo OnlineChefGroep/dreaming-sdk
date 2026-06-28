@@ -2,26 +2,41 @@
 
 Serves an auto-refreshing HTML overview plus JSON endpoints, reading from the
 Postgres SSOT. Designed to run as a systemd service on a fleet host (bc-monitor)
-and be viewed any time over Tailscale.
+and be viewed any time over Tailscale or the public internet via Cloudflare Tunnel.
 
 Run:
     uv run --extra web dream-memory serve --host 0.0.0.0 --port 8787
 or:
-    uv run uvicorn cursor_dreaming_memory.dashboard:app --host 0.0.0.0 --port 8787
+    uv run uvicorn dreaming_memory.dashboard:app --host 0.0.0.0 --port 8787
+
+Authentication:
+    Protected by Cloudflare Access on the public tunnel endpoint (memory.chefgroep.online).
+    Locally on the fleet host or via Tailscale, it is accessible without additional auth.
 """
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from dreaming_memory.config import FleetConfig
 from dreaming_memory.store.postgres import AgentMemoryStore
 
 try:
-    from fastapi import FastAPI
+    from fastapi import FastAPI, Request
     from fastapi.responses import HTMLResponse, JSONResponse
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.errors import RateLimitExceeded
+    from slowapi.util import get_remote_address
 except ImportError:  # pragma: no cover
     FastAPI = None  # type: ignore[assignment]
+    Request = None  # type: ignore[assignment]
+    HTMLResponse = None  # type: ignore[assignment]
+    JSONResponse = None  # type: ignore[assignment]
+    Limiter = None  # type: ignore[assignment]
+    _rate_limit_exceeded_handler = None  # type: ignore[assignment]
+    get_remote_address = None  # type: ignore[assignment]
+    RateLimitExceeded = None  # type: ignore[assignment]
 
 _store: AgentMemoryStore | None = None
 
@@ -31,6 +46,28 @@ def _get_store() -> AgentMemoryStore:
     if _store is None:
         _store = AgentMemoryStore()
     return _store
+
+
+def _redact_pii(text: str) -> str:
+    patterns = [
+        (r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[REDACTED_EMAIL]'),
+        (r'\b(?:\d{1,3}\.){3}\d{1,3}\b', '[REDACTED_IP]'),
+        (r'\b(?:\d[ -]*?){13,16}\b', '[REDACTED_CC]'),
+        (r'\b\d{9}\b', '[REDACTED_BSN]'),
+        (r'https?://[^\s/]+/[^\s/]*token[^\s]*', '[REDACTED_URL_WITH_TOKEN]'),
+        (r'[A-Za-z0-9_-]{20,}=', '[REDACTED_TOKEN]'),
+    ]
+    result = text
+    for pattern, replacement in patterns:
+        result = re.sub(pattern, replacement, result)
+    return result
+
+
+def _get_preview(preview: str) -> str:
+    preview = _redact_pii(preview)
+    if len(preview) > 80:
+        preview = preview[:80] + "..."
+    return preview
 
 
 def get_metrics(days: int = 14) -> dict[str, Any]:
@@ -69,7 +106,7 @@ def render_html(m: dict[str, Any]) -> str:
         f"<tr><td>{r['created_at'][:19].replace('T',' ')}</td>"
         f"<td><span class='tag'>{r['source']}</span></td>"
         f"<td>{r['memory_type']}</td><td>{r['session_type']}</td>"
-        f"<td class='muted'>{r['agent_id']}</td><td>{r['preview']}</td></tr>"
+        f"<td class='muted'>{r['agent_id']}</td><td>{_get_preview(r['preview'])}</td></tr>"
         for r in m["recent"]
     )
     return f"""<!doctype html><html lang="en"><head>
@@ -122,24 +159,119 @@ a{{color:var(--accent)}}
 
 
 if FastAPI is not None:
-    app = FastAPI(title="Agent Memory Metrics", version="0.1.0")
+    from fastapi import Request
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.errors import RateLimitExceeded
+    from slowapi.util import get_remote_address
+
+    limiter = Limiter(key_func=get_remote_address)
+    app = FastAPI(title="Agent Memory Metrics", version="0.2.0")
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     @app.get("/", response_class=HTMLResponse)
-    def index() -> Any:
+    @limiter.limit("60/minute")
+    def index(request: Request) -> Any:
         return HTMLResponse(render_html(get_metrics()))
 
     @app.get("/api/metrics")
-    def api_metrics(days: int = 14) -> Any:
+    @limiter.limit("30/minute")
+    def api_metrics(request: Request, days: int = 14) -> Any:
         return JSONResponse(get_metrics(days))
 
     @app.get("/healthz")
-    def healthz() -> Any:
+    @limiter.limit("100/minute")
+    def healthz(request: Request) -> Any:
         cfg = FleetConfig.load()
         try:
             _get_store().metrics(days=1)
             return JSONResponse({"status": "ok", "config": cfg.status()})
-        except Exception:  # noqa: BLE001
+        except Exception:
             return JSONResponse({"status": "error", "detail": "metrics unavailable"}, status_code=500)
+
+    # ------------------------------------------------------------------
+    # CHEF-1005: Governance API endpoints
+    # ------------------------------------------------------------------
+
+    @app.get("/api/governance/proposed")
+    @limiter.limit("30/minute")
+    def governance_proposed(request: Request, limit: int = 20) -> Any:
+        """List memories in the proposed/reviewing state."""
+        store = _get_store()
+        from dreaming_memory.types import CuratorState
+        decisions = store.get_curator_decisions_by_state(
+            CuratorState.PROPOSED, limit=limit
+        )
+        reviewing = store.get_curator_decisions_by_state(
+            CuratorState.REVIEWING, limit=limit
+        )
+        items = []
+        for d in decisions + reviewing:
+            record = store.get(d.memory_id)
+            items.append({
+                "memory_id": str(d.memory_id),
+                "state": d.state.value,
+                "decided_by": d.decided_by,
+                "rationale": d.rationale,
+                "decided_at": str(d.decided_at) if d.decided_at else None,
+                "memory_type": record.memory_type.value if record else None,
+                "agent_id": record.agent_id if record else None,
+            })
+        return JSONResponse({"items": items, "total": len(items)})
+
+    @app.get("/api/governance/metrics")
+    @limiter.limit("30/minute")
+    def governance_metrics(request: Request, days: int = 14) -> Any:
+        """Curator lifecycle metrics for the dashboard."""
+        store = _get_store()
+        metrics = store.curator_metrics(days=days)
+        return JSONResponse(metrics)
+
+    @app.get("/api/governance/{memory_id}")
+    @limiter.limit("30/minute")
+    def governance_detail(request: Request, memory_id: str) -> Any:
+        """Full governance detail for a specific memory: evidence, verifier results, curator decisions."""
+        from uuid import UUID
+        store = _get_store()
+        mid = UUID(memory_id)
+        record = store.get(mid)
+        evidence = store.get_evidence_for_memory(mid)
+        verifier = store.get_verifier_results_for_memory(mid)
+        decision = store.get_active_curator_decision(mid)
+        return JSONResponse({
+            "memory": {
+                "id": str(mid),
+                "memory_type": record.memory_type.value if record else None,
+                "agent_id": record.agent_id if record else None,
+                "content_preview": str(record.content)[:200] if record else None,
+            },
+            "evidence": [
+                {
+                    "id": str(e.id),
+                    "evidence_type": e.evidence_type.value,
+                    "source_url": e.source_url,
+                    "excerpt": e.excerpt[:200],
+                    "confidence": e.confidence,
+                }
+                for e in evidence
+            ],
+            "verifier_results": [
+                {
+                    "id": str(v.id),
+                    "status": v.status.value,
+                    "score": v.score,
+                    "rationale": v.rationale,
+                    "checked_by": v.checked_by,
+                }
+                for v in verifier
+            ],
+            "curator_decision": {
+                "state": decision.state.value if decision else None,
+                "decided_by": decision.decided_by if decision else None,
+                "rationale": decision.rationale if decision else None,
+                "transitions": decision.transitions if decision else [],
+            } if decision else None,
+        })
 else:  # pragma: no cover
     app = None  # type: ignore[assignment]
 
@@ -147,4 +279,4 @@ else:  # pragma: no cover
 def serve(host: str = "0.0.0.0", port: int = 8787) -> None:
     import uvicorn
 
-    uvicorn.run("cursor_dreaming_memory.dashboard:app", host=host, port=port, log_level="info")
+    uvicorn.run("dreaming_memory.dashboard:app", host=host, port=port, log_level="info")

@@ -60,5 +60,5 @@ cd /home/sofie/orgchefgroep/cursor-dreaming-sdk/python && uv run dream-memory me
 
 ## File Locations
 
-- Migrations: `python/src/cursor_dreaming_memory/store/migrations/`
-- Current schema: `python/src/cursor_dreaming_memory/store/schema.sql` (legacy)
+- Migrations: `python/src/dreaming_memory/store/migrations/`
+- Current schema: `python/src/dreaming_memory/store/schema.sql` (legacy)

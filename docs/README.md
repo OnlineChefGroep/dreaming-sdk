@@ -1,8 +1,8 @@
 # Dreaming & dream-eval — system overview
 
 **Single source of truth for the continual-learning and quality-gate pipeline.**  
-Maintained in [utrecht-data-os](https://github.com/OnlineChefGroep/utrecht-data-os) at `docs/ops/dreaming/`.  
-Published integration kit: [OnlineChefGroep/dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk).
+Source of truth for integration kit, automations, and Python memory extension.  
+Published at: [OnlineChefGroep/dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk).
 
 ---
 
@@ -121,8 +121,8 @@ Full per-platform matrix: [multi-agent.md](./multi-agent.md) · Install guide: [
 | **Eval orchestrator skill (Cursor)** | `~/.cursor/skills/dream-eval-loop/` |
 | **Automation prefill** | `~/.cursor/skills/dream-eval-loop/automations.json` |
 | **Repo-local override (W2)** | `<repo>/.cursor/dreaming/` |
-| **Docs (this tree)** | `docs/ops/dreaming/` |
-| **Skills bundle** | `docs/ops/dreaming/skills-bundle/` |
+| **Docs (this tree)** | `docs/` |
+| **Skills bundle** | `skills-bundle/` |
 | **GitHub integration kit** | https://github.com/OnlineChefGroep/dreaming-sdk |
 
 **Never commit:** live `dream-index.json`, `dream-decisions.jsonl`, transcripts with PII, or secrets.
@@ -144,7 +144,7 @@ node $env:USERPROFILE\.cursor\plugins\local\dreaming\cli\dream.mjs test --json
 From this repo:
 
 ```powershell
-& docs\ops\dreaming\skills-bundle\install-dream-skills.ps1 -Platform codex -Target .
+& skills-bundle\install-dream-skills.ps1 -Platform codex -Target .
 ```
 
 ### 3. Run one eval pass
@@ -172,7 +172,7 @@ Open Automations and prefill from `automations/dream_eval_weekly.json` in [dream
 | [maintainer-guide.md](./maintainer-guide.md) | Review, merge, dependency, and incident practices |
 | [release-process.md](./release-process.md) | Release checklist and artifact build flow |
 | [oss-readiness.md](./oss-readiness.md) | Public readiness checklist and remaining decisions |
-| [GITHUB-README.md](./GITHUB-README.md) | README for the dreaming-sdk repo |
+| [README.md](./README.md) | Repo-level README for the dreaming-sdk |
 | [skills-bundle/](../skills-bundle/) | Portable multi-agent skill scaffold |
 
 ---

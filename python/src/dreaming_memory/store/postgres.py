@@ -1,28 +1,82 @@
-"""Postgres-backed agent memory store."""
+"""Postgres-backed agent memory store.
+
+Sprint 1 governance methods (CHEF-1004, CHEF-1005, CHEF-1006):
+- write_evidence — persist evidence supporting a memory claim
+- write_verifier_result — attach verification result to a memory
+- write_curator_decision — create initial curator decision
+- get_active_curator_decision — retrieve active decision for a memory
+- update_curator_decision — update decision (state transition)
+- find_active_by_dedupe_key — idempotent write lookup
+"""
 
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from typing import Any
+from urllib.parse import parse_qs, urlparse, urlunparse
 from uuid import UUID
 
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
 from dreaming_memory.config import FleetConfig
-from dreaming_memory.types import MemoryRecord, MemorySource, MemoryType, SessionType
+from dreaming_memory.types import (
+    CuratorDecision,
+    CuratorState,
+    Evidence,
+    EvidenceType,
+    MemoryRecord,
+    MemorySource,
+    MemoryType,
+    SessionType,
+    VerifierResult,
+    VerifierStatus,
+)
+
+
+def _normalize_dsn(dsn: str) -> str:
+    """Ensure DSN has sslmode=require for encrypted connections.
+
+    Skips SSL enforcement for Tailscale/private IPs (100.x, 10.x, 192.168.x)
+    since these connections are already encrypted at the network level.
+    """
+    parsed = urlparse(dsn)
+    hostname = parsed.hostname or ""
+    is_private = (
+        hostname.startswith("100.")
+        or hostname.startswith("10.")
+        or hostname.startswith("192.168.")
+        or hostname == "localhost"
+    )
+    query = parse_qs(parsed.query)
+    if "sslmode" not in query and not is_private:
+        query["sslmode"] = ["require"]
+    new_query = "&".join(f"{k}={v}" for k, vals in query.items() for v in vals)
+    normalized = urlunparse(
+        (
+            parsed.scheme,
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            new_query,
+            parsed.fragment,
+        ),
+    )
+    return normalized
 
 
 class AgentMemoryStore:
     """CRUD for agent_memory table — Postgres SSOT."""
 
     def __init__(self, dsn: str | None = None, *, min_size: int = 2, max_size: int = 20) -> None:
-        self.dsn = dsn or FleetConfig.load().database_url
-        if not self.dsn:
+        raw_dsn = dsn or FleetConfig.load().database_url
+        if not raw_dsn:
             raise ValueError(
                 "No database DSN configured. Set AGENT_MEMORY_DATABASE_URL or DATABASE_URL "
                 "in your environment or .env file."
             )
+        self.dsn = _normalize_dsn(raw_dsn)
         self._pool = ConnectionPool(
             self.dsn,
             min_size=min_size,
@@ -257,6 +311,284 @@ class AgentMemoryStore:
             ).fetchone()
             conn.commit()
         return self._row_to_record(row) if row else None
+
+    # ------------------------------------------------------------------
+    # CHEF-1006: Idempotent write lookup
+    # ------------------------------------------------------------------
+
+    def find_active_by_dedupe_key(self, dedupe_key: str) -> MemoryRecord | None:
+        """Find an active (non-rolled-back) memory record by dedupe_key."""
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                SELECT am.* FROM agent_memory am
+                JOIN curator_decisions cd ON cd.memory_id = am.id
+                WHERE am.metadata->>'dedupe_key' = %s
+                  AND cd.state NOT IN ('rolled_back')
+                ORDER BY am.created_at DESC
+                LIMIT 1
+                """,
+                (dedupe_key,),
+            ).fetchone()
+        return self._row_to_record(row) if row else None
+
+    # ------------------------------------------------------------------
+    # CHEF-1004: Evidence
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _parse_json_field(value: Any) -> dict[str, Any]:
+        if isinstance(value, str):
+            return json.loads(value)
+        return value or {}
+
+    def write_evidence(self, evidence: Evidence) -> Evidence:
+        captured = evidence.captured_at or datetime.now(UTC)
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                INSERT INTO evidence (memory_id, evidence_type, source_url, source_id,
+                                     excerpt, confidence, captured_at, metadata)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s::jsonb)
+                RETURNING *
+                """,
+                (
+                    str(evidence.memory_id),
+                    evidence.evidence_type.value,
+                    evidence.source_url,
+                    evidence.source_id,
+                    evidence.excerpt,
+                    evidence.confidence,
+                    captured,
+                    json.dumps(evidence.metadata),
+                ),
+            ).fetchone()
+            conn.commit()
+        return Evidence(
+            id=row["id"],
+            memory_id=row["memory_id"],
+            evidence_type=EvidenceType(row["evidence_type"]),
+            source_url=row["source_url"],
+            source_id=row["source_id"],
+            excerpt=row["excerpt"],
+            confidence=row["confidence"],
+            captured_at=row["captured_at"],
+            metadata=self._parse_json_field(row["metadata"]),
+        )
+
+    def get_evidence_for_memory(self, memory_id: UUID) -> list[Evidence]:
+        with self._pool.connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM evidence WHERE memory_id = %s ORDER BY created_at",
+                (str(memory_id),),
+            ).fetchall()
+        return [
+            Evidence(
+                id=r["id"],
+                memory_id=r["memory_id"],
+                evidence_type=EvidenceType(r["evidence_type"]),
+                source_url=r["source_url"],
+                source_id=r["source_id"],
+                excerpt=r["excerpt"],
+                confidence=r["confidence"],
+                captured_at=r["captured_at"],
+                metadata=self._parse_json_field(r["metadata"]),
+            )
+            for r in rows
+        ]
+
+    # ------------------------------------------------------------------
+    # CHEF-1004: Verifier results
+    # ------------------------------------------------------------------
+
+    def write_verifier_result(self, result: VerifierResult) -> VerifierResult:
+        checked = result.checked_at or datetime.now(UTC)
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                INSERT INTO verifier_results (memory_id, status, score, evidence_refs,
+                                              rationale, checked_at, checked_by, metadata)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s::jsonb)
+                RETURNING *
+                """,
+                (
+                    str(result.memory_id),
+                    result.status.value,
+                    result.score,
+                    [str(ref) for ref in result.evidence_refs],
+                    result.rationale,
+                    checked,
+                    result.checked_by,
+                    json.dumps(result.metadata),
+                ),
+            ).fetchone()
+            conn.commit()
+        return VerifierResult(
+            id=row["id"],
+            memory_id=row["memory_id"],
+            status=VerifierStatus(row["status"]),
+            score=row["score"],
+            evidence_refs=[UUID(ref) for ref in (row["evidence_refs"] or [])],
+            rationale=row["rationale"],
+            checked_at=row["checked_at"],
+            checked_by=row["checked_by"],
+            metadata=self._parse_json_field(row["metadata"]),
+        )
+
+    def get_verifier_results_for_memory(self, memory_id: UUID) -> list[VerifierResult]:
+        with self._pool.connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM verifier_results WHERE memory_id = %s ORDER BY checked_at",
+                (str(memory_id),),
+            ).fetchall()
+        return [
+            VerifierResult(
+                id=r["id"],
+                memory_id=r["memory_id"],
+                status=VerifierStatus(r["status"]),
+                score=r["score"],
+                evidence_refs=[UUID(ref) for ref in (r["evidence_refs"] or [])],
+                rationale=r["rationale"],
+                checked_at=r["checked_at"],
+                checked_by=r["checked_by"],
+                metadata=self._parse_json_field(r["metadata"]),
+            )
+            for r in rows
+        ]
+
+    # ------------------------------------------------------------------
+    # CHEF-1005: Curator decisions
+    # ------------------------------------------------------------------
+
+    def write_curator_decision(self, decision: CuratorDecision) -> CuratorDecision:
+        decided = decision.decided_at or datetime.now(UTC)
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                INSERT INTO curator_decisions (memory_id, state, decided_at, decided_by,
+                                              rationale, previous_state, transitions, metadata)
+                VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb)
+                RETURNING *
+                """,
+                (
+                    str(decision.memory_id),
+                    decision.state.value,
+                    decided,
+                    decision.decided_by,
+                    decision.rationale,
+                    decision.previous_state.value if decision.previous_state else None,
+                    json.dumps(decision.transitions),
+                    json.dumps(decision.metadata),
+                ),
+            ).fetchone()
+            conn.commit()
+        return self._row_to_curator_decision(row)
+
+    def get_active_curator_decision(self, memory_id: UUID) -> CuratorDecision | None:
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM curator_decisions
+                WHERE memory_id = %s
+                  AND state NOT IN ('rejected', 'edited', 'rolled_back')
+                ORDER BY decided_at DESC
+                LIMIT 1
+                """,
+                (str(memory_id),),
+            ).fetchone()
+        return self._row_to_curator_decision(row) if row else None
+
+    def update_curator_decision(
+        self, memory_id: UUID, decision: CuratorDecision
+    ) -> CuratorDecision:
+        decided = decision.decided_at or datetime.now(UTC)
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                UPDATE curator_decisions SET
+                    state = %s,
+                    decided_at = %s,
+                    decided_by = %s,
+                    rationale = %s,
+                    previous_state = %s,
+                    transitions = %s::jsonb,
+                    metadata = %s::jsonb
+                WHERE memory_id = %s
+                  AND state NOT IN ('rejected', 'edited', 'rolled_back')
+                RETURNING *
+                """,
+                (
+                    decision.state.value,
+                    decided,
+                    decision.decided_by,
+                    decision.rationale,
+                    decision.previous_state.value if decision.previous_state else None,
+                    json.dumps(decision.transitions),
+                    json.dumps(decision.metadata),
+                    str(memory_id),
+                ),
+            ).fetchone()
+            conn.commit()
+        return self._row_to_curator_decision(row)
+
+    def get_curator_decisions_by_state(
+        self, state: CuratorState, limit: int = 50
+    ) -> list[CuratorDecision]:
+        with self._pool.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM curator_decisions
+                WHERE state = %s
+                ORDER BY decided_at DESC
+                LIMIT %s
+                """,
+                (state.value, limit),
+            ).fetchall()
+        return [self._row_to_curator_decision(r) for r in rows]
+
+    def curator_metrics(self, days: int = 14) -> dict[str, Any]:
+        """Aggregate curator lifecycle metrics for the dashboard."""
+        with self._pool.connection() as conn:
+            by_state = conn.execute(
+                "SELECT state, count(*) AS n FROM curator_decisions GROUP BY state ORDER BY n DESC"
+            ).fetchall()
+            total = sum(r["n"] for r in by_state)
+            recent = conn.execute(
+                """
+                SELECT to_char(date_trunc('day', decided_at), 'YYYY-MM-DD') AS day,
+                       state, count(*) AS n
+                FROM curator_decisions
+                WHERE decided_at >= now() - make_interval(days => %s)
+                GROUP BY 1, 2 ORDER BY 1
+                """,
+                (days,),
+            ).fetchall()
+        return {
+            "total": total,
+            "by_state": [{"state": r["state"], "count": r["n"]} for r in by_state],
+            "per_day": [{"day": r["day"], "state": r["state"], "count": r["n"]} for r in recent],
+        }
+
+    @staticmethod
+    def _row_to_curator_decision(row: dict[str, Any]) -> CuratorDecision:
+        transitions = row["transitions"]
+        if isinstance(transitions, str):
+            transitions = json.loads(transitions)
+        metadata = row["metadata"]
+        if isinstance(metadata, str):
+            metadata = json.loads(metadata)
+        prev_state = row.get("previous_state")
+        return CuratorDecision(
+            id=row["id"],
+            memory_id=row["memory_id"],
+            state=CuratorState(row["state"]),
+            decided_at=row["decided_at"],
+            decided_by=row["decided_by"],
+            rationale=row["rationale"],
+            previous_state=CuratorState(prev_state) if prev_state else None,
+            transitions=transitions,
+            metadata=metadata,
+        )
 
     @staticmethod
     def _row_to_record(row: dict[str, Any] | None) -> MemoryRecord:

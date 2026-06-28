@@ -19,11 +19,11 @@ Expert for external service integrations in cursor-dreaming-sdk.
 
 ## Key Files
 
-- `python/src/cursor_dreaming_memory/integrations/linear.py` — LinearClient + LinearMemoryBridge
-- `python/src/cursor_dreaming_memory/integrations/notion.py` — NotionMemoryBridge
-- `python/src/cursor_dreaming_memory/integrations/cloudflare.py` — CloudflareR2
-- `python/src/cursor_dreaming_memory/integrations/slack.py` — SlackClient
-- `python/src/cursor_dreaming_memory/observability/sentry.py` — Sentry integration
+- `python/src/dreaming_memory/integrations/linear.py` — LinearClient + LinearMemoryBridge
+- `python/src/dreaming_memory/integrations/notion.py` — NotionMemoryBridge
+- `python/src/dreaming_memory/integrations/cloudflare.py` — CloudflareR2
+- `python/src/dreaming_memory/integrations/slack.py` — SlackClient
+- `python/src/dreaming_memory/observability/sentry.py` — Sentry integration
 
 ## Patterns
 

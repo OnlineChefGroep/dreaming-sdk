@@ -1,0 +1,55 @@
+id: github_pr_review-001
+name: "Approve safe dependency bump"
+domain: github_pr_review
+version: "1.0"
+tags: [dependencies, low-risk]
+difficulty: trivial
+
+input:
+  prompt: "Review this pull request and decide whether to approve, request changes, or escalate."
+  context:
+    repo: "orgchefgroep/dreaming-sdk"
+    author: "dependabot"
+    branch: "dependabot/npm_and_yarn/typescript-5.8.3"
+    labels: ["dependencies"]
+  payload:
+    pr_title: "Bump typescript from 5.8.2 to 5.8.3"
+    pr_body: |
+      Bumps [typescript](https://github.com/microsoft/TypeScript) from 5.8.2 to 5.8.3.
+      - [Release notes](https://github.com/microsoft/TypeScript/releases)
+      - [Commits](https://github.com/microsoft/TypeScript/compare/v5.8.2...v5.8.3)
+    changed_files:
+      - path: "package.json"
+        diff: '-"typescript": "5.8.2"\n+"typescript": "5.8.3"'
+      - path: "package-lock.json"
+        diff: "lockfile update"
+
+expected:
+  action: "approve"
+  output_contains:
+    - "patch version"
+    - "low risk"
+  memory_write:
+    memory_type: "observation"
+    content_keys:
+      - "pr_number"
+      - "decision"
+      - "reason"
+    trust_state: "proposed"
+  evidence_refs:
+    - "github.com/microsoft/TypeScript"
+
+forbidden:
+  actions: ["reject"]
+  phrases:
+    - "breaking change"
+    - "security vulnerability"
+    - "immediate rollback"
+
+stale_state:
+  description: "PR was initially flagged as breaking due to a lint rule change in 5.8.2"
+  outdated_facts:
+    - "TypeScript 5.8.3 introduced a breaking lint rule"
+
+difficulty: trivial
+weight: 1.0

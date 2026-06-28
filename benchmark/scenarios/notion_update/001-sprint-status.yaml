@@ -1,0 +1,45 @@
+id: notion_update-001
+name: "Approve sprint status page update"
+domain: notion_update
+version: "1.0"
+tags: [documentation, sprint-status]
+difficulty: easy
+
+input:
+  prompt: "Review this Notion page update for the Sprint 1 status page. Approve or reject."
+  context:
+    workspace: "orgchefgroep"
+    page_id: "sprint-1-status"
+    current_page_title: "Sprint 1 — Memory Governance Core"
+  payload:
+    page_title: "Sprint 1 — Memory Governance Core"
+    change_summary: |
+      Updated status from 'In Progress' to 'Complete'.
+      Added completion notes:
+      - 25 governance tests passing
+      - schema_v4.sql deployed to staging
+      - Dashboard governance API endpoints live
+    diff_type: "status_update"
+
+expected:
+  action: "approve"
+  output_contains:
+    - "complete"
+    - "consistent"
+  memory_write:
+    memory_type: "observation"
+    content_keys:
+      - "page_title"
+      - "old_status"
+      - "new_status"
+    trust_state: "proposed"
+
+forbidden:
+  actions: ["reject"]
+  phrases:
+    - "inaccurate"
+    - "incorrect"
+    - "contradicts"
+
+difficulty: easy
+weight: 1.0

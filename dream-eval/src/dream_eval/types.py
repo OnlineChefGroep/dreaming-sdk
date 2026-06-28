@@ -47,7 +47,7 @@ class EvalReport(BaseModel):
     sessions_evaluated: int = 0
     token_cost: int = 0
     latency: float = 0.0
-    evaluator_version: str = "0.1.0"
+    evaluator_version: str = "0.2.0"
 
 
 class LabeledItem(BaseModel):

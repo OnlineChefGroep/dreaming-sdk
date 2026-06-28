@@ -25,6 +25,7 @@ lint:
 
 test:
 	cd python && uv run pytest -q
+	cd benchmark && python3 -m pytest tests/ -q
 	npm test
 
 python-build:
