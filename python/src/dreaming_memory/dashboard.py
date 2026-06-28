@@ -16,6 +16,7 @@ Authentication:
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from dreaming_memory.config import FleetConfig
@@ -35,6 +36,28 @@ def _get_store() -> AgentMemoryStore:
     if _store is None:
         _store = AgentMemoryStore()
     return _store
+
+
+def _redact_pii(text: str) -> str:
+    patterns = [
+        (r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[REDACTED_EMAIL]'),
+        (r'\b(?:\d{1,3}\.){3}\d{1,3}\b', '[REDACTED_IP]'),
+        (r'\b(?:\d[ -]*?){13,16}\b', '[REDACTED_CC]'),
+        (r'\b\d{9}\b', '[REDACTED_BSN]'),
+        (r'https?://[^\s/]+/[^\s/]*token[^\s]*', '[REDACTED_URL_WITH_TOKEN]'),
+        (r'[A-Za-z0-9_-]{20,}=', '[REDACTED_TOKEN]'),
+    ]
+    result = text
+    for pattern, replacement in patterns:
+        result = re.sub(pattern, replacement, result)
+    return result
+
+
+def _get_preview(preview: str) -> str:
+    preview = _redact_pii(preview)
+    if len(preview) > 80:
+        preview = preview[:80] + "..."
+    return preview
 
 
 def get_metrics(days: int = 14) -> dict[str, Any]:
@@ -73,7 +96,7 @@ def render_html(m: dict[str, Any]) -> str:
         f"<tr><td>{r['created_at'][:19].replace('T',' ')}</td>"
         f"<td><span class='tag'>{r['source']}</span></td>"
         f"<td>{r['memory_type']}</td><td>{r['session_type']}</td>"
-        f"<td class='muted'>{r['agent_id']}</td><td>{r['preview']}</td></tr>"
+        f"<td class='muted'>{r['agent_id']}</td><td>{_get_preview(r['preview'])}</td></tr>"
         for r in m["recent"]
     )
     return f"""<!doctype html><html lang="en"><head>
