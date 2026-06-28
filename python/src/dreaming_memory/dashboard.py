@@ -23,10 +23,20 @@ from dreaming_memory.config import FleetConfig
 from dreaming_memory.store.postgres import AgentMemoryStore
 
 try:
-    from fastapi import FastAPI
+    from fastapi import FastAPI, Request
     from fastapi.responses import HTMLResponse, JSONResponse
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.errors import RateLimitExceeded
+    from slowapi.util import get_remote_address
 except ImportError:  # pragma: no cover
     FastAPI = None  # type: ignore[assignment]
+    Request = None  # type: ignore[assignment]
+    HTMLResponse = None  # type: ignore[assignment]
+    JSONResponse = None  # type: ignore[assignment]
+    Limiter = None  # type: ignore[assignment]
+    _rate_limit_exceeded_handler = None  # type: ignore[assignment]
+    get_remote_address = None  # type: ignore[assignment]
+    RateLimitExceeded = None  # type: ignore[assignment]
 
 _store: AgentMemoryStore | None = None
 
@@ -149,18 +159,29 @@ a{{color:var(--accent)}}
 
 
 if FastAPI is not None:
+    from fastapi import Request
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.errors import RateLimitExceeded
+    from slowapi.util import get_remote_address
+
+    limiter = Limiter(key_func=get_remote_address)
     app = FastAPI(title="Agent Memory Metrics", version="0.2.0")
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     @app.get("/", response_class=HTMLResponse)
-    def index() -> Any:
+    @limiter.limit("60/minute")
+    def index(request: Request) -> Any:
         return HTMLResponse(render_html(get_metrics()))
 
     @app.get("/api/metrics")
-    def api_metrics(days: int = 14) -> Any:
+    @limiter.limit("30/minute")
+    def api_metrics(request: Request, days: int = 14) -> Any:
         return JSONResponse(get_metrics(days))
 
     @app.get("/healthz")
-    def healthz() -> Any:
+    @limiter.limit("100/minute")
+    def healthz(request: Request) -> Any:
         cfg = FleetConfig.load()
         try:
             _get_store().metrics(days=1)

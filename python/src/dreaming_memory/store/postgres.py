@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from typing import Any
+from urllib.parse import parse_qs, urlparse, urlunparse
 from uuid import UUID
 
 from psycopg.rows import dict_row
@@ -13,16 +14,37 @@ from dreaming_memory.config import FleetConfig
 from dreaming_memory.types import MemoryRecord, MemorySource, MemoryType, SessionType
 
 
+def _normalize_dsn(dsn: str) -> str:
+    """Ensure DSN has sslmode=require for encrypted connections."""
+    parsed = urlparse(dsn)
+    query = parse_qs(parsed.query)
+    if "sslmode" not in query:
+        query["sslmode"] = ["require"]
+    new_query = "&".join(f"{k}={v}" for k, vals in query.items() for v in vals)
+    normalized = urlunparse(
+        (
+            parsed.scheme,
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            new_query,
+            parsed.fragment,
+        ),
+    )
+    return normalized
+
+
 class AgentMemoryStore:
     """CRUD for agent_memory table — Postgres SSOT."""
 
     def __init__(self, dsn: str | None = None, *, min_size: int = 2, max_size: int = 20) -> None:
-        self.dsn = dsn or FleetConfig.load().database_url
-        if not self.dsn:
+        raw_dsn = dsn or FleetConfig.load().database_url
+        if not raw_dsn:
             raise ValueError(
                 "No database DSN configured. Set AGENT_MEMORY_DATABASE_URL or DATABASE_URL "
                 "in your environment or .env file."
             )
+        self.dsn = _normalize_dsn(raw_dsn)
         self._pool = ConnectionPool(
             self.dsn,
             min_size=min_size,
