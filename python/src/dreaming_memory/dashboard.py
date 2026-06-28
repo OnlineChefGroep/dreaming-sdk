@@ -188,6 +188,90 @@ if FastAPI is not None:
             return JSONResponse({"status": "ok", "config": cfg.status()})
         except Exception:
             return JSONResponse({"status": "error", "detail": "metrics unavailable"}, status_code=500)
+
+    # ------------------------------------------------------------------
+    # CHEF-1005: Governance API endpoints
+    # ------------------------------------------------------------------
+
+    @app.get("/api/governance/proposed")
+    @limiter.limit("30/minute")
+    def governance_proposed(request: Request, limit: int = 20) -> Any:
+        """List memories in the proposed/reviewing state."""
+        store = _get_store()
+        from dreaming_memory.types import CuratorState
+        decisions = store.get_curator_decisions_by_state(
+            CuratorState.PROPOSED, limit=limit
+        )
+        reviewing = store.get_curator_decisions_by_state(
+            CuratorState.REVIEWING, limit=limit
+        )
+        items = []
+        for d in decisions + reviewing:
+            record = store.get(d.memory_id)
+            items.append({
+                "memory_id": str(d.memory_id),
+                "state": d.state.value,
+                "decided_by": d.decided_by,
+                "rationale": d.rationale,
+                "decided_at": str(d.decided_at) if d.decided_at else None,
+                "memory_type": record.memory_type.value if record else None,
+                "agent_id": record.agent_id if record else None,
+            })
+        return JSONResponse({"items": items, "total": len(items)})
+
+    @app.get("/api/governance/metrics")
+    @limiter.limit("30/minute")
+    def governance_metrics(request: Request, days: int = 14) -> Any:
+        """Curator lifecycle metrics for the dashboard."""
+        store = _get_store()
+        metrics = store.curator_metrics(days=days)
+        return JSONResponse(metrics)
+
+    @app.get("/api/governance/{memory_id}")
+    @limiter.limit("30/minute")
+    def governance_detail(request: Request, memory_id: str) -> Any:
+        """Full governance detail for a specific memory: evidence, verifier results, curator decisions."""
+        from uuid import UUID
+        store = _get_store()
+        mid = UUID(memory_id)
+        record = store.get(mid)
+        evidence = store.get_evidence_for_memory(mid)
+        verifier = store.get_verifier_results_for_memory(mid)
+        decision = store.get_active_curator_decision(mid)
+        return JSONResponse({
+            "memory": {
+                "id": str(mid),
+                "memory_type": record.memory_type.value if record else None,
+                "agent_id": record.agent_id if record else None,
+                "content_preview": str(record.content)[:200] if record else None,
+            },
+            "evidence": [
+                {
+                    "id": str(e.id),
+                    "evidence_type": e.evidence_type.value,
+                    "source_url": e.source_url,
+                    "excerpt": e.excerpt[:200],
+                    "confidence": e.confidence,
+                }
+                for e in evidence
+            ],
+            "verifier_results": [
+                {
+                    "id": str(v.id),
+                    "status": v.status.value,
+                    "score": v.score,
+                    "rationale": v.rationale,
+                    "checked_by": v.checked_by,
+                }
+                for v in verifier
+            ],
+            "curator_decision": {
+                "state": decision.state.value if decision else None,
+                "decided_by": decision.decided_by if decision else None,
+                "rationale": decision.rationale if decision else None,
+                "transitions": decision.transitions if decision else [],
+            } if decision else None,
+        })
 else:  # pragma: no cover
     app = None  # type: ignore[assignment]
 

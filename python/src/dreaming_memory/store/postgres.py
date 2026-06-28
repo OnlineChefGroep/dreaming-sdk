@@ -12,6 +12,7 @@ Sprint 1 governance methods (CHEF-1004, CHEF-1005, CHEF-1006):
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import parse_qs, urlparse, urlunparse
 from uuid import UUID
@@ -35,10 +36,21 @@ from dreaming_memory.types import (
 
 
 def _normalize_dsn(dsn: str) -> str:
-    """Ensure DSN has sslmode=require for encrypted connections."""
+    """Ensure DSN has sslmode=require for encrypted connections.
+
+    Skips SSL enforcement for Tailscale/private IPs (100.x, 10.x, 192.168.x)
+    since these connections are already encrypted at the network level.
+    """
     parsed = urlparse(dsn)
+    hostname = parsed.hostname or ""
+    is_private = (
+        hostname.startswith("100.")
+        or hostname.startswith("10.")
+        or hostname.startswith("192.168.")
+        or hostname == "localhost"
+    )
     query = parse_qs(parsed.query)
-    if "sslmode" not in query:
+    if "sslmode" not in query and not is_private:
         query["sslmode"] = ["require"]
     new_query = "&".join(f"{k}={v}" for k, vals in query.items() for v in vals)
     normalized = urlunparse(
@@ -331,6 +343,7 @@ class AgentMemoryStore:
         return value or {}
 
     def write_evidence(self, evidence: Evidence) -> Evidence:
+        captured = evidence.captured_at or datetime.now(UTC)
         with self._pool.connection() as conn:
             row = conn.execute(
                 """
@@ -346,7 +359,7 @@ class AgentMemoryStore:
                     evidence.source_id,
                     evidence.excerpt,
                     evidence.confidence,
-                    evidence.captured_at,
+                    captured,
                     json.dumps(evidence.metadata),
                 ),
             ).fetchone()
@@ -389,6 +402,7 @@ class AgentMemoryStore:
     # ------------------------------------------------------------------
 
     def write_verifier_result(self, result: VerifierResult) -> VerifierResult:
+        checked = result.checked_at or datetime.now(UTC)
         with self._pool.connection() as conn:
             row = conn.execute(
                 """
@@ -403,7 +417,7 @@ class AgentMemoryStore:
                     result.score,
                     [str(ref) for ref in result.evidence_refs],
                     result.rationale,
-                    result.checked_at,
+                    checked,
                     result.checked_by,
                     json.dumps(result.metadata),
                 ),
@@ -447,6 +461,7 @@ class AgentMemoryStore:
     # ------------------------------------------------------------------
 
     def write_curator_decision(self, decision: CuratorDecision) -> CuratorDecision:
+        decided = decision.decided_at or datetime.now(UTC)
         with self._pool.connection() as conn:
             row = conn.execute(
                 """
@@ -458,7 +473,7 @@ class AgentMemoryStore:
                 (
                     str(decision.memory_id),
                     decision.state.value,
-                    decision.decided_at,
+                    decided,
                     decision.decided_by,
                     decision.rationale,
                     decision.previous_state.value if decision.previous_state else None,
@@ -486,6 +501,7 @@ class AgentMemoryStore:
     def update_curator_decision(
         self, memory_id: UUID, decision: CuratorDecision
     ) -> CuratorDecision:
+        decided = decision.decided_at or datetime.now(UTC)
         with self._pool.connection() as conn:
             row = conn.execute(
                 """
@@ -503,7 +519,7 @@ class AgentMemoryStore:
                 """,
                 (
                     decision.state.value,
-                    decision.decided_at,
+                    decided,
                     decision.decided_by,
                     decision.rationale,
                     decision.previous_state.value if decision.previous_state else None,
