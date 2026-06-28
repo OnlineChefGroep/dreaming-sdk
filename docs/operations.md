@@ -41,7 +41,7 @@ All commands support `--json`. Full contract: [skills-bundle/shared/cli-contract
 ## Cursor Automations
 
 Prefill source: `~/.cursor/skills/dream-eval-loop/automations.json`  
-Published copies: [dreaming-sdk/automations/](https://github.com/OnlineChefGroep/dreaming-sdk/tree/main/automations)
+Published copies: [dreaming-sdk/automations/](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/tree/main/automations)
 
 ### dream_eval_weekly
 
@@ -75,7 +75,7 @@ $env:CURSOR_API_KEY = "cursor_..."
 node --experimental-strip-types sdk/run-dream-cloud.ts
 
 # Cloud (repo must commit eval inputs)
-$env:REPO_URL = "https://github.com/OnlineChefGroep/dreaming-sdk"
+$env:REPO_URL = "https://github.com/OnlineChefGroep/cursor-dreaming-sdk"
 node --experimental-strip-types sdk/run-dream-cloud.ts --cloud
 ```
 
@@ -85,11 +85,11 @@ Exit codes: `0` ok · `1` startup · `2` run failed/timeout.
 
 ## Install skills (multi-agent)
 
-From utrecht-data-os or any repo:
+From the SDK repo:
 
 ```powershell
-& docs\ops\dreaming\skills-bundle\install-dream-skills.ps1 -Platform codex -Target C:\path\to\repo
-& docs\ops\dreaming\skills-bundle\install-dream-skills.ps1 -Platform all -Global
+& skills-bundle\install-dream-skills.ps1 -Platform codex -Target C:\path\to\repo
+& skills-bundle\install-dream-skills.ps1 -Platform all -Global
 ```
 
 Verify after install:

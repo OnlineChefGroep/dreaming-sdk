@@ -19,10 +19,10 @@ Expert for all Postgres-related work in cursor-dreaming-sdk.
 
 ## Key Files
 
-- `python/src/cursor_dreaming_memory/store/postgres.py` — Main store with ConnectionPool
-- `python/src/cursor_dreaming_memory/store/schema.sql` — Legacy schema (deprecated)
-- `python/src/cursor_dreaming_memory/store/migrations/` — Versioned migrations
-- `python/src/cursor_dreaming_memory/config.py` — FleetConfig with database_url
+- `python/src/dreaming_memory/store/postgres.py` — Main store with ConnectionPool
+- `python/src/dreaming_memory/store/schema.sql` — Legacy schema (deprecated)
+- `python/src/dreaming_memory/store/migrations/` — Versioned migrations
+- `python/src/dreaming_memory/config.py` — FleetConfig with database_url
 
 ## Patterns
 

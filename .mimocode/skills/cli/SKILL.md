@@ -19,8 +19,8 @@ Expert for the dream-memory CLI tool.
 
 ## Key Files
 
-- `python/src/cursor_dreaming_memory/cli.py` — Main CLI entrypoint
-- `python/src/cursor_dreaming_memory/dashboard.py` — FastAPI metrics server
+- `python/src/dreaming_memory/cli.py` — Main CLI entrypoint
+- `python/src/dreaming_memory/dashboard.py` — FastAPI metrics server
 - `python/pyproject.toml` — Script entry point: `dream-memory`
 
 ## Commands

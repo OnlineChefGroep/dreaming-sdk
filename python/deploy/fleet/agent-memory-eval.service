@@ -5,6 +5,6 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=%h/cursor-dreaming-memory
+WorkingDirectory=%h/dreaming-memory
 # Source the shell-style env file (export KEY="val") then run the sync flow.
 ExecStart=/bin/bash -lc 'set -a; [ -f %h/.agent-memory.env ] && . %h/.agent-memory.env; set +a; exec %h/.local/bin/uv run python deploy/oci/prefect_flow.py'

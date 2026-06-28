@@ -107,8 +107,9 @@ TOOL_DEFINITIONS = [
 
 
 METRICS_SCHEMA = {
-    "run_id": "string (ISO stem)",
+    "run_id": "string (ISO stem) [required]",
     "date": "ISO8601",
+    "timestamp": "ISO8601",
     "mode": "golden | live",
     "sessions_evaluated": "int",
     "items_proposed": "int",
@@ -116,13 +117,16 @@ METRICS_SCHEMA = {
     "rejected": "int",
     "edited": "int",
     "deferred": "int",
-    "rolled_back": {"pref": 0, "workflow": 0, "skill": 0, "subagent": 0, "rule": 0},
+    "rolled_back": {"pref": "int", "workflow": "int", "skill": "int", "subagent": "int", "rule": "int"},
     "acceptance_rate": {"overall": "float|null", "per_category": "float|null"},
     "precision": "float [0,1]",
     "recall": "float [0,1]",
     "recurrence_calibration": "float [0,1]",
-    "faithfulness_score": "float [0,1]",
-    "secret_leak_test": "pass | fail",
+    "faithfulness_score": "float [0,1] [required]",
+    "faithfulness": "float [0,1]",
+    "secret_leak_test": "pass | fail | warn | skip",
+    "gates": "{gate_name: bool, ...}",
+    "hard_fail": "bool",
     "regret_rate": "float|null",
     "token_cost": "int",
     "latency": "float",
@@ -184,7 +188,7 @@ def create_server() -> Any:
 
     mcp = FastMCP(
         "dream-eval",
-        version="0.1.0",
+        version="0.2.0",
         description="Agent-agnostic faithfulness evaluation for agent memory",
     )
 

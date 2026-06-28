@@ -1,6 +1,6 @@
 {
   "name": "@onlinechefgroep/dream-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CLI and SDK integration kit for the Cursor dreaming plugin eval loop",
   "bin": {
     "dream": "bin/dream.js"

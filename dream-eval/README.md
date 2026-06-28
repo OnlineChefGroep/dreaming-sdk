@@ -2,9 +2,9 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/dream-eval.svg)](https://pypi.org/project/dream-eval/)
 [![Python](https://img.shields.io/pypi/pyversions/dream-eval.svg)](https://pypi.org/project/dream-eval/)
-[![License](https://img.shields.io/pypi/l/dream-eval.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/blob/main/dream-eval/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-132%20passing-brightgreen)](https://github.com/OnlineChefGroep/dreaming-sdk/actions)
-[![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen)](https://github.com/OnlineChefGroep/dreaming-sdk)
+[![License](https://img.shields.io/pypi/l/dream-eval.svg)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/blob/main/dream-eval/LICENSE)
+[![Tests](https://img.shields.io/badge/tests-132%20passing-brightgreen)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions)
+[![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk)
 
 Agent-agnostic faithfulness evaluation framework for agent memory quality scoring.
 

@@ -4,8 +4,18 @@ from dream_eval.gates import check_hash_determinism, check_secret_leak
 from dream_eval.types import GateStatus
 
 
-def test_secret_leak_no_patterns():
+def test_secret_leak_default_patterns():
     result = check_secret_leak("some output text")
+    assert result.status == GateStatus.PASS
+
+
+def test_secret_leak_default_patterns_detected():
+    result = check_secret_leak("sk-abc123xyzDEF456uvw789 secret key")
+    assert result.status == GateStatus.FAIL
+
+
+def test_secret_leak_explicit_empty_skips():
+    result = check_secret_leak("some output text", forbidden_patterns=[])
     assert result.status == GateStatus.SKIP
 
 

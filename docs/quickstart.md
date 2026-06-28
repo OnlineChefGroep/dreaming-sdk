@@ -19,7 +19,7 @@ export PATH="$HOME/.local/bin:$PATH"
 ## 2. Clone and inspect
 
 ```bash
-git clone https://github.com/OnlineChefGroep/dreaming-sdk.git
+git clone https://github.com/OnlineChefGroep/cursor-dreaming-sdk.git
 cd dreaming-sdk
 ```
 

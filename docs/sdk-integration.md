@@ -3,7 +3,7 @@
 How the dreaming plugin eval loop is consumed by Cursor SDK, OpenCode/Codex, generic HTTP/webhook callers, and future npm packages — without duplicating logic that belongs in the plugin.
 
 **Plugin SSOT:** `~/.cursor/plugins/local/dreaming/`  
-**Integration kit:** [OnlineChefGroep/dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk)
+**Integration kit:** [OnlineChefGroep/cursor-dreaming-sdk](https://github.com/OnlineChefGroep/cursor-dreaming-sdk)
 
 ---
 
@@ -214,4 +214,4 @@ Multi-agent distribution phases: [multi-agent.md](./multi-agent.md).
 | SDK driver | `sdk/run-dream-cloud.ts` |
 | Eval loop skill | `~/.cursor/skills/dream-eval-loop/SKILL.md` |
 | Chain reference | [skills-bundle/shared/chain-reference.md](../skills-bundle/shared/chain-reference.md) |
-| Target repo | https://github.com/OnlineChefGroep/dreaming-sdk |
+| Target repo | https://github.com/OnlineChefGroep/cursor-dreaming-sdk |

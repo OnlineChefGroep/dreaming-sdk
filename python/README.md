@@ -1,4 +1,4 @@
-# cursor-dreaming-memory
+# dreaming-memory
 
 Lightweight agent memory extension for **dreaming-sdk** (Utrecht Data OS / CHEF-308).
 
@@ -19,8 +19,8 @@ uv sync --extra semantic
 ## Quick start
 
 ```python
-from cursor_dreaming_memory import AgentMemory, SessionContext
-from cursor_dreaming_memory.types import MemoryType, MemorySource
+from dreaming_memory import AgentMemory, SessionContext
+from dreaming_memory.types import MemoryType, MemorySource
 
 memory = AgentMemory()
 memory.ensure_schema()

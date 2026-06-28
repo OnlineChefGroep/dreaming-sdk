@@ -44,8 +44,20 @@ class PostgresEvalBackend:
     def __exit__(self, *exc: Any) -> None:
         self.close()
 
-    def save_eval_result(self, result: EvalResult) -> None:
-        """Persist eval result as a memory record."""
+    def save_eval_result(
+        self,
+        result: EvalResult,
+        report: EvalReport | None = None,
+    ) -> None:
+        """Persist eval result as a memory record.
+
+        When *report* is provided the eval report is stored alongside the
+        metrics dict so it round-trips through `load_eval_report`.
+        """
+        payload = {
+            "metrics": result.to_metrics_dict(),
+            "report": report.model_dump(mode="json") if report else None,
+        }
         with self._pool.connection() as conn:
             conn.execute(
                 """
@@ -59,7 +71,7 @@ class PostgresEvalBackend:
                     result.run_id,
                     "dream_eval",
                     "decision",
-                    json.dumps(result.to_metrics_dict()),
+                    json.dumps(payload),
                     "sdk",
                     json.dumps({"dream_eval": True, "mode": result.mode.value}),
                 ),
@@ -82,11 +94,22 @@ class PostgresEvalBackend:
         content = row["content"]
         if isinstance(content, str):
             content = json.loads(content)
+
+        if isinstance(content, dict) and "report" in content:
+            report_data = content["report"]
+            if report_data:
+                return EvalReport.model_validate(report_data)
+            metrics = content.get("metrics", {})
+        elif isinstance(content, dict):
+            metrics = content
+        else:
+            metrics = {}
+
         return EvalReport(
             items=[],
-            sessions_evaluated=content.get("sessions_evaluated", 0),
-            token_cost=content.get("token_cost", 0),
-            latency=content.get("latency", 0),
+            sessions_evaluated=metrics.get("sessions_evaluated", 0),
+            token_cost=metrics.get("token_cost", 0),
+            latency=metrics.get("latency", 0),
         )
 
     def load_labels(self, corpus_path: str | None = None) -> Labels:

@@ -38,8 +38,8 @@ dream-memory notion-ingest <page_id>      # store page snapshot
 ## Python
 
 ```python
-from cursor_dreaming_memory import AgentMemory, SessionContext
-from cursor_dreaming_memory.types import MemoryType, MemorySource
+from dreaming_memory import AgentMemory, SessionContext
+from dreaming_memory.types import MemoryType, MemorySource
 
 memory = AgentMemory()                      # auto-loads fleet secrets + DSN
 ctx = SessionContext.from_sdk_payload({"session_id": SID, "platform": "codex"})

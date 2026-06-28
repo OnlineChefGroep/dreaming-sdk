@@ -8,12 +8,12 @@ from unittest.mock import patch
 from dream_eval.cli import main
 
 
-def test_gates_secret_leak_no_patterns(capsys):
+def test_gates_secret_leak_default_patterns(capsys):
     with patch("sys.argv", ["dream-eval", "gates", "--text", "clean output"]):
         main()
     out = capsys.readouterr().out
     data = json.loads(out)
-    assert data["status"] == "skip"
+    assert data["status"] == "pass"
 
 
 def test_gates_hash_via_text(capsys):

@@ -4,7 +4,7 @@ How **Claude Code**, **Codex/OpenAI**, **OpenCode**, **Grok (Factory)**, and **C
 
 **Runtime SSOT:** `~/.cursor/plugins/local/dreaming/`  
 **Portable skills:** [skills-bundle/](../skills-bundle/)  
-**Integration kit:** [OnlineChefGroep/dreaming-sdk](https://github.com/OnlineChefGroep/dreaming-sdk)
+**Integration kit:** [OnlineChefGroep/cursor-dreaming-sdk](https://github.com/OnlineChefGroep/cursor-dreaming-sdk)
 
 ---
 
@@ -190,4 +190,4 @@ node cli/dream.mjs <command> [--json]
 | SDK integration | [sdk-integration.md](./sdk-integration.md) |
 | Skill bundle | [skills-bundle/](../skills-bundle/) |
 | Utrecht Codex index pattern | `.agents/skills/00-skills/SKILL.md` |
-| Target repo | https://github.com/OnlineChefGroep/dreaming-sdk |
+| Target repo | https://github.com/OnlineChefGroep/cursor-dreaming-sdk |

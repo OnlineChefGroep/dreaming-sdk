@@ -16,7 +16,7 @@ TEAM_KEY = os.environ.get("LINEAR_TEAM_KEY", "CHEF")
 
 
 class LinearClient:
-    """Lightweight Linear API wrapper aligned with utrecht-data-os/scripts/linear_api.py."""
+    """Lightweight Linear API wrapper for reading/writing issues into agent memory."""
 
     def __init__(self, api_key: str | None = None, team_key: str | None = None) -> None:
         self.api_key = api_key or os.environ.get("LINEAR_API_KEY", "")

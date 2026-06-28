@@ -7,7 +7,7 @@ and be viewed any time over Tailscale.
 Run:
     uv run --extra web dream-memory serve --host 0.0.0.0 --port 8787
 or:
-    uv run uvicorn cursor_dreaming_memory.dashboard:app --host 0.0.0.0 --port 8787
+    uv run uvicorn dreaming_memory.dashboard:app --host 0.0.0.0 --port 8787
 """
 
 from __future__ import annotations
@@ -122,7 +122,7 @@ a{{color:var(--accent)}}
 
 
 if FastAPI is not None:
-    app = FastAPI(title="Agent Memory Metrics", version="0.1.0")
+    app = FastAPI(title="Agent Memory Metrics", version="0.2.0")
 
     @app.get("/", response_class=HTMLResponse)
     def index() -> Any:
@@ -147,4 +147,4 @@ else:  # pragma: no cover
 def serve(host: str = "0.0.0.0", port: int = 8787) -> None:
     import uvicorn
 
-    uvicorn.run("cursor_dreaming_memory.dashboard:app", host=host, port=port, log_level="info")
+    uvicorn.run("dreaming_memory.dashboard:app", host=host, port=port, log_level="info")

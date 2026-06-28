@@ -10,7 +10,7 @@ to the shared Postgres memory layer.
 | `bc-scan-arm` | A1.Flex (ARM, 23GB) | **Memory SSOT** — Postgres + vector (qdrant/weaviate) + llama.cpp |
 | `bc-scan-2` | A1.Flex (ARM) | Inference / inventory worker |
 | `bc-scan-1` | E2.1.Micro (x86) | Scanner |
-| `bc-monitor` | E2.1.Micro (x86) | Monitoring |
+| `bc-monitor` | A1.Flex (ARM) | Monitoring / scheduler (timers) |
 | `sofie` (this host) | local | Dev + orchestration |
 
 Postgres SSOT: `postgresql://agentmem:***@100.68.121.19:5432/agent_memory` (Tailscale).
@@ -32,22 +32,34 @@ sources it from `~/.bashrc`.
 ./install-agent-memory.sh bc-scan-2
 ```
 
-## 3. Wire code-agent CLIs
+## 3. Install / update the Codex CLI
+
+```bash
+./install-codex.sh bc-scan-arm    # single node
+for h in bc-monitor bc-scan-arm bc-scan-2 bc-scan-1; do
+  ./install-codex.sh "$h"
+done
+```
+
+Installs Node.js if missing, then `@openai/codex@latest` globally. Run after
+every Codex release to keep the fleet in sync.
+
+## 4. Wire code-agent CLIs
 
 Each agent CLI inherits the DSN + keys because its shell sources `~/.agent-memory.env`.
 Agents call memory three ways:
 
 | Surface | How |
 |---------|-----|
-| Python | `from cursor_dreaming_memory import AgentMemory` |
+| Python | `from dreaming_memory import AgentMemory` |
 | CLI | `dream-memory remember/recall/linear-ingest/notion-ingest` |
 | Skill | `skills-bundle/shared/agent-memory.md` (drop into any agent skills dir) |
 
 `session_type` is auto-detected per agent (cursor / codex / claude / opencode / grok)
 via `SessionContext.from_sdk_payload()`.
 
-## 4. Verify
+## 5. Verify
 
 ```bash
-ssh bc-scan-arm 'cd ~/Orgchefgroep/dreaming-sdk/python && uv run dream-memory recall --limit 5'
+ssh bc-scan-arm 'cd ~/cursor-dreaming-sdk/python && uv run dream-memory recall --limit 5'
 ```

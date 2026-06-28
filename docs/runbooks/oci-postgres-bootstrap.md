@@ -39,7 +39,7 @@ privately (no public Postgres port).
 
 ```bash
 ssh bc-scan-arm
-cd ~/cursor-dreaming-memory/deploy/oci
+cd ~/dreaming-memory/deploy/oci
 # docker-compose.yml binds 5432; restrict to the Tailscale interface in prod
 docker compose up -d
 ```

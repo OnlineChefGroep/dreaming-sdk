@@ -7,6 +7,22 @@ import re
 
 from dream_eval.types import GateResult, GateStatus
 
+DEFAULT_FORBIDDEN_PATTERNS: list[str] = [
+    r"sk-[a-zA-Z0-9]{20,}",
+    r"ghp_[a-zA-Z0-9]{36}",
+    r"gho_[a-zA-Z0-9]{36}",
+    r"ghu_[a-zA-Z0-9]{36}",
+    r"xox[bps]-[a-zA-Z0-9]{10,}",
+    r"AKIA[0-9A-Z]{16}",
+    r"password\s*=\s*\S+",
+    r"secret\s*=\s*\S+",
+    r"api[_-]?key\s*=\s*\S+",
+    r"Bearer\s+[A-Za-z0-9\-._~+/]{20,}",
+    r"-----BEGIN\s+(RSA|EC|DSA|OPENSSH)\s+PRIVATE\s+KEY-----",
+    r"https?://[^@\s]+@[^/\s]",
+    r"token\s*=\s*\S+",
+]
+
 
 def check_secret_leak(
     output_text: str,
@@ -14,8 +30,12 @@ def check_secret_leak(
 ) -> GateResult:
     """Check evaluator output for leaked secrets.
 
+    When *forbidden_patterns* is ``None`` the built-in defaults are used.
+    Pass an explicit empty list ``[]`` to skip scanning entirely.
     Hard stop: if any forbidden pattern matches, the eval must fail.
     """
+    if forbidden_patterns is None:
+        forbidden_patterns = list(DEFAULT_FORBIDDEN_PATTERNS)
     if not forbidden_patterns:
         return GateResult(
             name="secret_leak",

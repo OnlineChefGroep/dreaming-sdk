@@ -176,7 +176,7 @@ def _run_eval(args: argparse.Namespace) -> None:
         latency=report.latency,
     )
 
-    backend.save_eval_result(result)
+    backend.save_eval_result(result, report=report)
 
     print(
         json.dumps(

@@ -63,7 +63,7 @@ cd python && uv run dream-memory init
 
 ## Linear integration
 
-Aligned with `utrecht-data-os/scripts/linear_api.py`:
+Aligned with `scripts/linear_api.py`:
 
 - **Read:** `memory.linear.ingest_issue("CHEF-308", ctx)` — stores issue + comments
 - **Write:** `memory.linear.create_issue_from_memory(ctx, title, desc)`
@@ -81,7 +81,7 @@ Requires `NOTION_API_KEY` or `NOTION_TOKEN`.
 ## Semantic memory (optional)
 
 ```bash
-pip install cursor-dreaming-memory[semantic]
+pip install dreaming-memory[semantic]
 export LANCE_DB_URI=./data/lancedb   # or s3://bucket/path for R2
 ```
 
@@ -126,7 +126,7 @@ All records are JSON-serializable via `MemoryRecord.model_dump()`. Query by `ses
 
 ```
 dreaming-sdk/python/
-  src/cursor_dreaming_memory/
+  src/dreaming_memory/
   examples/linear_memory_flow.py
   deploy/oci/
   tests/

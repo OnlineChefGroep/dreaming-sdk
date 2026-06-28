@@ -32,15 +32,15 @@ Keys: `AGENT_MEMORY_DATABASE_URL`, `LINEAR_API_KEY`, `NOTION_API_KEY`,
 ```bash
 cd /home/sofie/orgchefgroep/dreaming-sdk
 for h in bc-monitor bc-scan-arm bc-scan-2; do
-  rsync -az --delete python/ "$h:~/cursor-dreaming-memory/"
-  ssh "$h" 'bash ~/cursor-dreaming-memory/deploy/fleet/install-memory.sh'
+  rsync -az --delete python/ "$h:~/dreaming-memory/"
+  ssh "$h" 'bash ~/dreaming-memory/deploy/fleet/install-memory.sh'
 done
 ```
 
 Fill each host's `~/.config/agent-memory/.env`, then verify:
 
 ```bash
-ssh bc-scan-2 'cd ~/cursor-dreaming-memory && FLEET_ENV_FILE=~/.config/agent-memory/.env uv run dream-memory doctor'
+ssh bc-scan-2 'cd ~/dreaming-memory && FLEET_ENV_FILE=~/.config/agent-memory/.env uv run dream-memory doctor'
 ```
 
 Expect `{"postgres": "ok"}`.
@@ -51,12 +51,12 @@ Each agent CLI calls the memory layer the same way (platform-agnostic):
 
 ```bash
 # Write a memory from any agent session
-uv run --project ~/cursor-dreaming-memory dream-memory remember \
+uv run --project ~/dreaming-memory dream-memory remember \
   --agent codex --session-id "$SESSION_ID" --session-type codex \
   --type observation --content '{"note":"..."}'
 
 # Recall for a session
-uv run --project ~/cursor-dreaming-memory dream-memory recall --session-id "$SESSION_ID"
+uv run --project ~/dreaming-memory dream-memory recall --session-id "$SESSION_ID"
 ```
 
 `session_type` accepts every SDK form: `cursor`, `claude`, `codex`, `opencode`,
@@ -65,7 +65,7 @@ uv run --project ~/cursor-dreaming-memory dream-memory recall --session-id "$SES
 ### Optional: shell alias on each host
 
 ```bash
-echo 'alias mem="uv run --project ~/cursor-dreaming-memory dream-memory"' >> ~/.bashrc
+echo 'alias mem="uv run --project ~/dreaming-memory dream-memory"' >> ~/.bashrc
 ```
 
 Then any agent or human runs `mem remember ...`, `mem recall ...`, `mem doctor`.

@@ -1,7 +1,7 @@
 # dreaming-sdk
 
-[![CI](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/codeql.yml/badge.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/codeql.yml)
+[![CI](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/codeql.yml/badge.svg)](https://github.com/OnlineChefGroep/cursor-dreaming-sdk/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![PyPI dream-eval](https://img.shields.io/pypi/v/dream-eval.svg)](https://pypi.org/project/dream-eval/)
 [![PyPI dreaming-memory](https://img.shields.io/pypi/v/dreaming-memory.svg)](https://pypi.org/project/dreaming-memory/)
@@ -158,7 +158,7 @@ Agent Skills for cross-agent adoption:
 
 ```bash
 # Clone
-git clone https://github.com/OnlineChefGroep/dreaming-sdk.git
+git clone https://github.com/OnlineChefGroep/cursor-dreaming-sdk.git
 cd dreaming-sdk
 
 # Setup dream-eval
