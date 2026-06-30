@@ -1,7 +1,7 @@
 [project]
 name = "dreaming-memory"
 version = "0.2.0"
-description = "Agent-agnostic memory extension — Postgres-backed agent memory with Linear, Notion, and Cloudflare integrations"
+description = "Governed agent memory for the dreaming-sdk memory trust layer"
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
 license = { text = "MIT" }

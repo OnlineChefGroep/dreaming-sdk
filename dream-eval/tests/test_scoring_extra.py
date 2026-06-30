@@ -1,5 +1,7 @@
 """Extra tests for dream-eval scoring to boost coverage."""
 
+from unittest.mock import MagicMock, patch
+
 from dream_eval.scoring import (
     _compute_pairwise_similarity,
     _content_supported,
@@ -57,10 +59,11 @@ def test_content_supported_fuzzy_missing_key():
 
 def test_content_supported_nli_fallback():
     """NLI falls back to fuzzy when transformers unavailable."""
-    item = ProposedItem(id="a", category="pref", content={"k": "exact match"})
-    label = LabeledItem(id="a", category="pref", content={"k": "exact match"})
-    supported, score = _content_supported_nli(item, label)
-    assert supported is True
+    with patch("dream_eval.nli.verify_content_nli", side_effect=ImportError):
+        item = ProposedItem(id="a", category="pref", content={"k": "exact match"})
+        label = LabeledItem(id="a", category="pref", content={"k": "exact match"})
+        supported, score = _content_supported_nli(item, label)
+        assert supported is True
 
 
 def test_compute_pairwise_similarity():
@@ -90,9 +93,36 @@ def test_recurrence_calibration_no_labels():
     assert compute_recurrence_calibration(proposed, labels) == 1.0
 
 
-def test_faithfulness_nli_mode():
+def test_faithfulness_nli_mode_fallback():
     """NLI mode falls back to fuzzy when transformers unavailable."""
-    proposed = [ProposedItem(id="a", category="pref", content={"k": "test"})]
-    labels = [LabeledItem(id="a", category="pref", content={"k": "test"})]
-    report = compute_faithfulness(proposed, labels, nli=True)
-    assert report.faithfulness_score == 1.0
+    # Ensure transformers is not imported or fails import for this test
+    with patch("dream_eval.nli._get_model", side_effect=ImportError):
+        proposed = [ProposedItem(id="a", category="pref", content={"k": "test"})]
+        labels = [LabeledItem(id="a", category="pref", content={"k": "test"})]
+        report = compute_faithfulness(proposed, labels, nli=True)
+        assert report.faithfulness_score == 1.0
+
+
+def test_faithfulness_nli_mode_mocked():
+    """NLI mode uses mocked model when available."""
+    mock_model = MagicMock()
+    mock_model.predict.return_value = 0.9  # High score
+
+    with patch("dream_eval.nli._get_model", return_value=mock_model):
+        proposed = [ProposedItem(id="a", category="pref", content={"k": "test"})]
+        labels = [LabeledItem(id="a", category="pref", content={"k": "test"})]
+        report = compute_faithfulness(proposed, labels, nli=True)
+        assert report.faithfulness_score == 1.0
+        assert mock_model.predict.called
+
+
+def test_faithfulness_nli_mode_mocked_low_score():
+    """NLI mode fails when score is below threshold."""
+    mock_model = MagicMock()
+    mock_model.predict.return_value = 0.2  # Low score
+
+    with patch("dream_eval.nli._get_model", return_value=mock_model):
+        proposed = [ProposedItem(id="a", category="pref", content={"k": "test"})]
+        labels = [LabeledItem(id="a", category="pref", content={"k": "test"})]
+        report = compute_faithfulness(proposed, labels, nli=True)
+        assert report.faithfulness_score == 0.0

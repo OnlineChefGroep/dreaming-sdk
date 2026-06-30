@@ -160,17 +160,18 @@ def test_agent_memory_store_metrics():
     # Make execute return different results for different queries
     def execute_side_effect(sql, *args):
         result = MagicMock()
-        sql_lower = sql.lower() if isinstance(sql, str) else ""
-        if "count(*)" in sql_lower and "max" not in sql_lower and "metadata" not in sql_lower:
+        # Handle both str and psycopg.sql.Composed/SQL objects
+        sql_str = str(sql).lower()
+        if "count(*)" in sql_str and "max" not in sql_str and "metadata" not in sql_str:
             result.fetchone.return_value = {"n": 10}
-        elif "max" in sql_lower:
+        elif "max" in sql_str:
             result.fetchone.return_value = {"ts": None}
-        elif "metadata" in sql_lower:
+        elif "metadata" in sql_str:
             result.fetchone.return_value = {"n": 5}
-        elif "recent" in sql_lower or "order by created_at desc limit" in sql_lower:
+        elif "recent" in sql_str or "order by created_at desc limit" in sql_str:
             result.fetchall.return_value = []
         else:
-            result.fetchall.return_value = [{"key": "sdk", "count": 5}]
+            result.fetchall.return_value = [{"key": "sdk", "n": 5}]
         return result
 
     mock_conn.execute.side_effect = execute_side_effect
