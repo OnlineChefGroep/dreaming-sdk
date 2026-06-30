@@ -1,7 +1,7 @@
 [project]
 name = "dream-eval"
 version = "0.2.0"
-description = "Agent-agnostic faithfulness evaluation framework — evaluator → judge → curator pipeline for agent memory quality scoring"
+description = "Faithfulness evaluation framework for the dreaming-sdk memory trust layer"
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
 license = { text = "MIT" }

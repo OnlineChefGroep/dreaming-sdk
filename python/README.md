@@ -1,6 +1,6 @@
 # dreaming-memory
 
-Lightweight agent memory extension for **dreaming-sdk** (Utrecht Data OS / CHEF-308).
+Governed agent memory for the **dreaming-sdk** memory trust layer (Utrecht Data OS / CHEF-308).
 
 ## Install
 

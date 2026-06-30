@@ -17,6 +17,7 @@ from typing import Any
 from urllib.parse import parse_qs, urlparse, urlunparse
 from uuid import UUID
 
+from psycopg import sql
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
@@ -194,35 +195,34 @@ class AgentMemoryStore:
         limit: int = 50,
         offset: int = 0,
     ) -> list[MemoryRecord]:
-        clauses: list[str] = []
-        params: list[Any] = []
+        clauses: list[sql.Composed] = []
         if agent_id:
-            clauses.append("agent_id = %s")
-            params.append(agent_id)
+            clauses.append(sql.SQL("agent_id = {}").format(sql.Placeholder()))
         if session_id:
-            clauses.append("session_id = %s")
-            params.append(session_id)
+            clauses.append(sql.SQL("session_id = {}").format(sql.Placeholder()))
         if session_type:
-            clauses.append("session_type = %s")
-            params.append(session_type.value)
+            clauses.append(sql.SQL("session_type = {}").format(sql.Placeholder()))
         if memory_type:
-            clauses.append("memory_type = %s")
-            params.append(memory_type.value)
+            clauses.append(sql.SQL("memory_type = {}").format(sql.Placeholder()))
         if source:
-            clauses.append("source = %s")
-            params.append(source.value)
-        where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+            clauses.append(sql.SQL("source = {}").format(sql.Placeholder()))
+
+        params: list[Any] = []
+        for p in (agent_id, session_id, session_type, memory_type, source):
+            if p:
+                params.append(p.value if hasattr(p, "value") else p)
+
+        query = sql.SQL("SELECT * FROM agent_memory")
+        if clauses:
+            query += sql.SQL(" WHERE ") + sql.SQL(" AND ").join(clauses)
+
+        query += sql.SQL(" ORDER BY created_at DESC LIMIT {} OFFSET {}").format(
+            sql.Placeholder(), sql.Placeholder()
+        )
         params.extend([limit, offset])
+
         with self._pool.connection() as conn:
-            rows = conn.execute(
-                f"""
-                SELECT * FROM agent_memory
-                {where}
-                ORDER BY created_at DESC
-                LIMIT %s OFFSET %s
-                """,
-                params,
-            ).fetchall()
+            rows = conn.execute(query, params).fetchall()
         return [self._row_to_record(r) for r in rows]
 
     def metrics(self, days: int = 14) -> dict[str, Any]:
@@ -231,10 +231,11 @@ class AgentMemoryStore:
             total = conn.execute("SELECT count(*) AS n FROM agent_memory").fetchone()["n"]
 
             def group(col: str) -> list[dict[str, Any]]:
-                rows = conn.execute(
-                    f"SELECT {col} AS key, count(*) AS n FROM agent_memory "
-                    f"GROUP BY {col} ORDER BY n DESC"
-                ).fetchall()
+                query = sql.SQL(
+                    "SELECT {col} AS key, count(*) AS n FROM agent_memory "
+                    "GROUP BY {col} ORDER BY n DESC"
+                ).format(col=sql.Identifier(col))
+                rows = conn.execute(query).fetchall()
                 return [{"key": r["key"], "count": r["n"]} for r in rows]
 
             by_source = group("source")

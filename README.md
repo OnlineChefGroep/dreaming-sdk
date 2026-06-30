@@ -1,4 +1,4 @@
-# dreaming-sdk
+# dreaming-sdk — Memory Trust Layer
 
 [![CI](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/codeql.yml/badge.svg)](https://github.com/OnlineChefGroep/dreaming-sdk/actions/workflows/codeql.yml)
@@ -6,12 +6,14 @@
 [![PyPI dream-eval](https://img.shields.io/pypi/v/dream-eval.svg)](https://pypi.org/project/dream-eval/)
 [![PyPI dreaming-memory](https://img.shields.io/pypi/v/dreaming-memory.svg)](https://pypi.org/project/dreaming-memory/)
 
-**Agent-agnostic faithfulness evaluation framework for agent memory quality scoring.**
+**Agent-agnostic trust and governance layer for agent memory verification and quality scoring.**
 
-Two Python packages for evaluating and storing agent memory:
+`dreaming-sdk` provides the tools to verify, score, block, curate, and persist trust state around agent memory. It is designed to work as a trust boundary between agents and their memory engines.
 
-- **`dream-eval`** — standalone faithfulness evaluation (scoring, gates, MCP server)
-- **`dreaming-memory`** — Postgres-backed agent memory with integrations
+Two Python packages for evaluating and governing agent memory:
+
+- **`dream-eval`** — Faithfulness evaluation (scoring, deterministic gates, MCP server)
+- **`dreaming-memory`** — Governed agent memory with Postgres SSOT and integrations
 
 ---
 
@@ -101,13 +103,15 @@ pip install dream-eval[mcp]      # + MCP server
 
 ## dreaming-memory
 
-Agent memory extension with Postgres SSOT.
+Governed agent memory with Postgres SSOT.
 
 ### Features
 
+- **Memory Governance:** `Evidence`, `VerifierResult`, and `CuratorDecision` lifecycle
+- **Idempotent Writes:** Prevent duplicate active memory on re-ingestion
 - **Postgres-backed storage** with connection pooling
 - **Linear/Notion/Cloudflare integrations**
-- **Dashboard** with metrics
+- **Dashboard** with trust metrics
 - **CLI** for all operations
 
 ### Quick start
